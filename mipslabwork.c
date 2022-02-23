@@ -67,7 +67,7 @@ void labinit( void )
 /* This function is called repetitively from the main program */
 void labwork( void )
 {
-  prime = nextprime ( prime );
-  display_string ( 0, itoaconv ( prime ) );
-  display_update();
+  //prime = nextprime ( prime );
+  //display_string ( 0, itoaconv ( prime ) );
+  //display_update();
 }
