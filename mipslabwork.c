@@ -17,7 +17,7 @@
 int mytime = 0x5957;
 int prime = 1234567;
 
-char textstring[] = "text, more text, and even more text!";
+char textstring[] = "";
 
 int timeoutcount = 0;
 
