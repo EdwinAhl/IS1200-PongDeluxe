@@ -1,4 +1,4 @@
 *.o
 .deps
-outfile.elf
-outfile.hex
+*elf
+*hex
