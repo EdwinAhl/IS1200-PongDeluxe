@@ -29,15 +29,16 @@ void user_isr( void )
     TMR2 = 0; // reset timer for timer2
 
     if (timeoutcount++ == 10) {
-      time2string ( textstring, mytime );
-      display_string( 3, textstring );
+      //time2string ( textstring, mytime );
+      //display_string( 3, textstring );
+      textbuffer[0][0] = 0xFF;
       display_update();
       tick ( &mytime );
       timeoutcount = 0;
     }
   }
 
-  textbuffer[0][0] = 0xFF;
+  
 
   //only uses two interrupts, has to be switches
   if (IFS(0) & 0b1000000000000000){ 
