@@ -1,0 +1,4 @@
+*.o
+.deps
+outfile.elf
+outfile.hex

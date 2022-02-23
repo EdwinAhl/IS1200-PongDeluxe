@@ -36,6 +36,9 @@ void user_isr( void )
       timeoutcount = 0;
     }
   }
+
+  textbuffer[0][0] = 0xFF;
+
   //only uses two interrupts, has to be switches
   if (IFS(0) & 0b1000000000000000){ 
     IFS(0) = IFS(0) & ~0b1000000000000000; // bit 15 resets INT3
