@@ -50,7 +50,7 @@ void clear_display() {
       display[i][j] = 0;
 }
 
-void set_pixel(int x, int y){
+void set_pixel(int x, int y) {
   display[1][x + (y/8)*32] = 1 << (y % 8);
 }
 
