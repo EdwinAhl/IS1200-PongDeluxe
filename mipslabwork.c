@@ -56,6 +56,8 @@ void set_pixel(int x, int y) {
 }
 
 
+
+int totaltimeout = 0; // global timer
 int timeoutcount = 0; // used to keep track of time loops
 
 /* Interrupt Service Routine */
@@ -64,6 +66,7 @@ void user_isr( void )
   if (IFS(0) & 0b100000000) { // if interrupt is timer2
     IFS(0) = IFS(0) & ~0b100000000; // bit 8 resets timer2
     TMR2 = 0; // reset timer for timer2
+    totaltimeout++;
 
     if (timeoutcount++ == 10) {
       //time2string ( textstring, mytime );
@@ -146,12 +149,15 @@ void button2() {
     set_pixel(2,2);
 }
 
+int last_debug = 0;
+
 void button3() {
   if (currentScreen == 'm') {
+    last_debug = totaltimeout;
     debug();
   }
 
-  else if (currentScreen == 'd')
+  else if (currentScreen == 'd' && (totaltimeout-last_debug > 2))
     set_pixel(3,3);
 }
 
