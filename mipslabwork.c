@@ -65,6 +65,7 @@ void labinit( void )
   PR2 = 31250;  // (80M*10^6)/256/10
   
   //lights
+  TRISE = 0; // lights are outputs ?
   PORTE = 0; // lights off for now
 
   // timing interrupts
@@ -72,7 +73,7 @@ void labinit( void )
   IPC(2) = IPC(2) | 0b11100;  
   
   enable_interrupt();
-  set_pixel(0,0);
+  set_pixel(1,1);
 }
 
 
@@ -84,8 +85,9 @@ void labwork( void )
   int buttons = getbtns();
   int switches = getsw();
 
+  
   // button 1
-  if((buttons & 0b1) == 1) { PORTE = 1; }
+  if((buttons & 0b0) == 1) { PORTE = 1; }
   
   // button 2
   if((buttons & 0b10) == 2) { PORTE = 2; }
@@ -95,4 +97,5 @@ void labwork( void )
 
   // button 4
   if((buttons & 0b1000) == 8) { PORTE = 4; }
+  }
 }
