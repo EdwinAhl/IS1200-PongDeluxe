@@ -78,14 +78,14 @@ void labwork( void )
   int switches = getsw();
 
   // button 1
-  if((buttons & 0b01) == 1) { PORTE = 0b1; }
-
+  if((buttons & 0b1) == 1) { PORTE = 1; }
+  
   // button 2
-  if((buttons & 0b10) == 2) { PORTE = 0b10; }
+  if((buttons & 0b10) == 2) { PORTE = 2; }
 
   // button 3
-  if((buttons & 0b100) == 4) { PORTE = 0b11; }
+  if((buttons & 0b100) == 4) { PORTE = 3; }
 
   // button 4
-  if((buttons & 0b1000) == 8) { PORTE = 0b100; }
+  if((buttons & 0b1000) == 8) { PORTE = 4; }
 }
