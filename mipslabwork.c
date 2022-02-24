@@ -27,7 +27,7 @@ uint8_t display[] = {
 };
 
 void set_pixel(int x, int y){
-  display[x + y*32] =  1 << (8 - ( x % 8) );
+  display[x/8 + y*32] =  1 << (8 - ( x % 8) );
 }
 
 int timeoutcount = 0;
