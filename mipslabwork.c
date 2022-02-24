@@ -83,9 +83,12 @@ void user_isr( void )
 /* Lab-specific initialization goes here */
 void labinit( void )
 {
-  // buttons
-  TRISD = 0; // all off before toggling some on
-  TRISD = 0b111110000; // bits 4-7 button inputs (bits 9-11 is for switches)
+  // button 1
+  TRISF = 0b10;
+  PORTF = 0;
+
+  // buttons 2-4
+  TRISD = 0b111100000; // bits 5-7 buttons 2-4 as inputs (bits 9-11 is for switches)
   PORTD = 0; // value of all buttons zero to begin with
   
   // lights
@@ -115,16 +118,16 @@ void labwork( void )
 
   if(switches>0) { clear_display(); }
   
-  if((buttons & 0b1) == 1) { set_pixel(1,1); } // button 1
-  if((buttons & 0b10) == 2) { set_pixel(2,2); } // button 2
-  if((buttons & 0b100) == 4) { set_pixel(3,3); } // button 3
-  if((buttons & 0b1000) == 8) { set_pixel(4,4); } // button 4
+  if(buttons & 0b1) { set_pixel(1,1); } // button 1
+  if(buttons & 0b10) { set_pixel(2,2); } // button 2
+  if(buttons & 0b100) { set_pixel(3,3); } // button 3
+  if(buttons & 0b1000) { set_pixel(4,4); } // button 4
 
-  //test();
+  // test();
 }
 
 void test() {
   int i = 0;
     for (i = 0; i<=31; i++)
-      set_pixel(i,i);
+      set_pixel(i+16,i);
 }
