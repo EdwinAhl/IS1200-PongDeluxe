@@ -44,10 +44,10 @@ uint8_t **display = {
 };
 
 void clear_display() {
-  int i;
-  for (i = 0; i < sizeof(display) / 8; i++){
-    display[i] = 0;
-  }
+  int i, j;
+  for (i = 0; i < 4; i++)
+    for (j = 0; j < 128; j++)
+      display[i][j] = 0;
 }
 
 void set_pixel(int x, int y){
@@ -126,5 +126,5 @@ void labwork( void )
 void test() {
   int i = 0;
     for (i = 0; i<=31; i++)
-      set_pixel(i,i);
+      set_pixel(i+16,i);
 }
