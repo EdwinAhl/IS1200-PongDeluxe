@@ -18,6 +18,7 @@ int mytime = 0x5957;
 int prime = 1234567;
 
 char textstring[] = "";
+uint8_t display[128];
 
 int timeoutcount = 0;
 
@@ -63,6 +64,14 @@ void labinit( void )
   // sw3 interrupt
   IEC(0) = IEC(0) | 0b1000000000000000; // bit 15 enable INT3
   IPC(3) = IPC(3) | 0b11100000000000000000000000000; // bit 26-28 priority for INT3 external interrupt 3
+/*Creates the needed display to represent the snake and food on.
+ *- Written by Emil Ståhl*/
+  uint8_t display[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  };
 
   display[2] = 255;
   enable_interrupt();
