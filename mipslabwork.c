@@ -42,7 +42,7 @@ void user_isr( void )
     if (timeoutcount++ == 10) {
       //time2string ( textstring, mytime );
       //display_string( 3, textstring );
-      display_update();
+      //display_update();
       tick ( &mytime );
       timeoutcount = 0;
     }
@@ -79,6 +79,7 @@ void labinit( void )
 /* This function is called repetitively from the main program */
 void labwork( void )
 {
+  display_image(0, display);
   // intializing buttons and switches as variables
   int buttons = getbtns();
   int switches = getsw();
