@@ -141,8 +141,8 @@ void display_string(int line, char *s) {
 			textbuffer[line][i] = ' ';
 }
 
-void display_image(int x, const uint8_t *data) {
-	int i, j;
+void display_image(const uint8_t **data) {
+	int i, j, x;
 	
 	for(i = 0; i < 4; i++) {
 		DISPLAY_CHANGE_TO_COMMAND_MODE;
