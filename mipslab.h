@@ -8,7 +8,7 @@
    For copyright and licensing, see file COPYING */
 
 /* Declare display-related functions from mipslabfunc.c */
-void display_image(const uint8_t **data);
+void display_image(const uint8_t data[4][128]);
 void display_init(void);
 void display_string(int line, char *s);
 void display_update(void);
