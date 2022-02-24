@@ -2,6 +2,6 @@
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
 #include "mipslab.h"  /* Declatations for these labs */
 
-int getsw() { return (PORTD >> 8) & 0b1111; }
+int getsw() { return (PORTD >> 8) & 0xF; } // switches start at bit 8, get value of all 4
 
-int getbtns() { return (PORTD >> 4) & 0b1111; }
+int getbtns() { return (PORTD >> 4) & 0xF; } // buttons start at bit 4, get value of all 4

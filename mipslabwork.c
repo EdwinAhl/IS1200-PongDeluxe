@@ -41,7 +41,7 @@ void clear_display() {
 }
 
 void set_pixel(int x, int y){
-  display[y*4 + x] = 1 << (y - (y/8) * 8);
+  display[x + (y/8)*32] = 1 << (y % 8);
 }
 
 
@@ -74,6 +74,10 @@ void user_isr( void )
 /* Lab-specific initialization goes here */
 void labinit( void )
 {
+  // T2
+  T2CON = 0b1000000001110000; 
+  PR2 = 31250;  // (80M*10^6)/256/10
+
   // buttons
   TRISD = 0;
   TRISD = 0b111110000; // bits 4-7 button inputs (bits 9-11 is for switches)
@@ -82,10 +86,6 @@ void labinit( void )
   // lights
   TRISE = 0; // lights are outputs
   PORTE = 0; // lights off for now
-
-  // T2
-  T2CON = 0b1000000001110000; 
-  PR2 = 31250;  // (80M*10^6)/256/10
 
   // timing interrupts
   IEC(0) = IEC(0) | 0b100000000;
