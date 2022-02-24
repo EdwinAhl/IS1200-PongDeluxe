@@ -71,8 +71,6 @@ void labinit( void )
   IEC(0) = IEC(0) | 0b100000000;
   IPC(2) = IPC(2) | 0b11100;  
   
-  display[1] = 225;
-
   enable_interrupt();
   set_pixel(0,0);
 }
