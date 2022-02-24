@@ -52,7 +52,7 @@ void clear_display() {
 }
 
 void set_pixel(int x, int y) {
-  display[1][x + (y/8)*32] = 1 << (y % 8);
+  display[x/32][x + (y/8)*32] = display[x/32][x + (y/8)*32] | 1 << (y % 8);
 }
 
 
