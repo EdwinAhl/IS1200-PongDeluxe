@@ -30,7 +30,7 @@ uint8_t display[] = {
 };
 
 void set_pixel(int x, int y){
-  display[x*2 + (y+1)/8] = 1 << (y % 8);
+  display[x*4 + (y+1)/8] = 1 << (y % 8);
 }
 
 
@@ -69,9 +69,9 @@ void labinit( void )
 
   // buttons
   TRISD = 0b111111100000; //bits 5-11 inputs
-  PORTD = 0;
+  PORTD = 0; 
   
-  //lights
+  // lights
   TRISE = 0; // lights are outputs
   PORTE = 0; // lights off for now
 
