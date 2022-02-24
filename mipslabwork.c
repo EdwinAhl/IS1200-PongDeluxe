@@ -117,9 +117,11 @@ void labwork( void )
   if((buttons & 0b100) == 4) { set_pixel(3,3); } // button 3
   if((buttons & 0b1000) == 8) { set_pixel(4,4); } // button 4
 
-  
+  test();
+}
+
+void test() {
   int i = 0;
-  for (i = 0; i<=31; i++)
-    set_pixel(i,i);
-  
+    for (i = 0; i<=31; i++)
+      set_pixel(i,i);
 }
