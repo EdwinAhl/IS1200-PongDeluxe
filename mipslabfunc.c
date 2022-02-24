@@ -144,8 +144,9 @@ void display_string(int line, char *s) {
 
 void display_image(uint8_t data[][128]) {
 	int i, j, x;
+  x = 1;
 
-  for (x = 0; x < 4; x++){
+  //for (x = 0; x < 4; x++){
     for(i = 0; i < 4; i++) {
       DISPLAY_CHANGE_TO_COMMAND_MODE;
 
@@ -158,9 +159,9 @@ void display_image(uint8_t data[][128]) {
       DISPLAY_CHANGE_TO_DATA_MODE;
       
       for(j = 0; j < 32; j++)
-        spi_send_recv(data[x][i*32 + j]);
+        spi_send_recv(data[1][i*32 + j]);
     }
-  }
+  //}
 }
 
 void display_update(void) {
