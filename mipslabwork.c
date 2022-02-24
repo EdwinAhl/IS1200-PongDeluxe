@@ -76,7 +76,7 @@ void labinit( void )
 {
   // buttons
   TRISD = 0;
-  TRISD = 0b11110000; // bits 4-7 button inputs (bits 9-11 is for switches)
+  TRISD = 0b111110000; // bits 4-7 button inputs (bits 9-11 is for switches)
   PORTD = 0; 
   
   // lights
@@ -102,18 +102,14 @@ void labwork( void )
 
   // intializing buttons and switches as variables
   int buttons = getbtns();
+  int switches = getsw();
 
-  // button 1
-  if((buttons & 0b1) == 1) { set_pixel(1,1); }
+  if(switches>0) { clear_display(); }
   
-  // button 2
-  if((buttons & 0b10) == 2) { set_pixel(2,2); }
-
-  // button 3
-  if((buttons & 0b100) == 4) { set_pixel(3,3); }
-
-  // button 4
-  if((buttons & 0b1000) == 8) { set_pixel(4,4); }
+  if((buttons & 0b1) == 1) { set_pixel(1,1); } // button 1
+  if((buttons & 0b10) == 2) { set_pixel(2,2); } // button 2
+  if((buttons & 0b100) == 4) { set_pixel(3,3); } // button 3
+  if((buttons & 0b1000) == 8) { set_pixel(4,4); } // button 4
 
   /*
   int i = 0;
