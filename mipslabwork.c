@@ -81,11 +81,11 @@ void labinit( void )
 void labwork( void )
 {
   display_image(0, display);
+
   // intializing buttons and switches as variables
   int buttons = getbtns();
   int switches = getsw();
 
-  
   // button 1
   if((buttons & 0b0) == 1) { PORTE = 1; }
   
@@ -97,5 +97,5 @@ void labwork( void )
 
   // button 4
   if((buttons & 0b1000) == 8) { PORTE = 4; }
-  }
+  
 }
