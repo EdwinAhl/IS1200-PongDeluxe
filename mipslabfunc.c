@@ -141,11 +141,9 @@ void display_string(int line, char *s) {
 			textbuffer[line][i] = ' ';
 }
 
-void display_image(const uint8_t *all_data) {
+void display_image(const uint8_t *data) {
 	int i, j, x;
 	for (x = 0; x < 4; x++){
-    const uint8_t *data = all_data + i * 128;
-
     for(i = 0; i < 4; i++) {
       DISPLAY_CHANGE_TO_COMMAND_MODE;
 
@@ -158,7 +156,7 @@ void display_image(const uint8_t *all_data) {
       DISPLAY_CHANGE_TO_DATA_MODE;
       
       for(j = 0; j < 32; j++)
-        spi_send_recv(data[i*32 + j]);
+        spi_send_recv(data[i*32 + j + 128*x]);
     }
   }
 }
