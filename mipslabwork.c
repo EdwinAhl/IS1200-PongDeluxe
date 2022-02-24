@@ -76,7 +76,6 @@ void labinit( void )
   IPC(2) = IPC(2) | 0b11100;  
   
   enable_interrupt();
-  set_pixel(1,1);
 }
 
 
@@ -90,15 +89,14 @@ void labwork( void )
   int switches = getsw();
 
   // button 1
-  if((buttons & 0b0) == 1) { PORTE = 1; }
+  if((buttons & 0b1) == 1) { set_pixel(1,1); }
   
   // button 2
-  if((buttons & 0b10) == 2) { PORTE = 2; }
+  if((buttons & 0b10) == 2) { set_pixel(2,2); }
 
   // button 3
-  if((buttons & 0b100) == 4) { PORTE = 3; }
+  if((buttons & 0b100) == 4) { set_pixel(3,3); }
 
   // button 4
-  if((buttons & 0b1000) == 8) { PORTE = 4; }
-  
+  if((buttons & 0b1000) == 8) { set_pixel(4,4); }
 }
