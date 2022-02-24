@@ -10,13 +10,16 @@
 
    For copyright and licensing, see file COPYING */
 
+
 #include <stdint.h>   /* Declarations of uint_32 and the like */
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
 #include "mipslab.h"  /* Declatations for these labs */
 #include <string.h>
 
+
 int mytime = 0x5957;
 int prime = 1234567;
+
 
 char textstring[] = "";
 uint8_t display[] = {
@@ -29,6 +32,7 @@ uint8_t display[] = {
 void set_pixel(int x, int y){
   display[(x-1)*4 + y/8] =  1 << ((y % 8) - 1);
 }
+
 
 int timeoutcount = 0;
 
@@ -48,14 +52,13 @@ void user_isr( void )
     }
   }
 
-  
-
   //only uses two interrupts, has to be switches
   if (IFS(0) & 0b1000000000000000){ 
     IFS(0) = IFS(0) & ~0b1000000000000000; // bit 15 resets INT3
     PORTE++; //increase 
   }
 }
+
 
 /* Lab-specific initialization goes here */
 void labinit( void )
@@ -65,7 +68,7 @@ void labinit( void )
   PR2 = 31250;  // (80M*10^6)/256/10
   
   //lights
-  TRISE = 0; // lights are outputs ?
+  TRISE = 0; // lights are outputs
   PORTE = 0; // lights off for now
 
   // timing interrupts
