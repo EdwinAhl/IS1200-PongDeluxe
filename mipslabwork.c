@@ -17,10 +17,6 @@
 #include <string.h>
 
 
-int mytime = 0x5957;
-int prime = 1234567;
-
-
 char textstring[] = "";
 uint8_t display[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -47,7 +43,7 @@ uint8_t display[] = {
 void clear_display() {
   int i;
   for (i = 0; i < sizeof(display) / 8; i++){
-    display[i];
+    display[i] = 0;
   }
 }
 
@@ -56,7 +52,7 @@ void set_pixel(int x, int y){
 }
 
 
-int timeoutcount = 0;
+int timeoutcount = 0; // used to keep track of time loops
 
 /* Interrupt Service Routine */
 void user_isr( void )
@@ -69,7 +65,6 @@ void user_isr( void )
       //time2string ( textstring, mytime );
       //display_string( 3, textstring );
       //display_update();
-      tick ( &mytime );
       timeoutcount = 0;
     }
   }
@@ -122,9 +117,9 @@ void labwork( void )
   if((buttons & 0b100) == 4) { set_pixel(3,3); } // button 3
   if((buttons & 0b1000) == 8) { set_pixel(4,4); } // button 4
 
-  /*
+  
   int i = 0;
   for (i = 0; i<=31; i++)
     set_pixel(i,i);
-  */
+  
 }
