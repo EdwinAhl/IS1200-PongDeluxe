@@ -117,26 +117,37 @@ char currentScreen = 'm';
   2. Leadearboard
 */ 
 void menu() {
-  display_string(0, "1. Start")
-  display_string(1, "2. Leaderboard")
-  display_string(0, "3. Debug")
+  display_string(0, "1. Start");
+  display_string(1, "2. Leaderboard");
+  display_string(3, "3. Debug");
+  display_update();
 }
 
 
+// buttons
+
 void button1() {
-  set_pixel(1,1);
+  if (currentScreen == 'm')
+    set_pixel(1,1);
+  
 }
 
 void button2() {
-  set_pixel(2,2);
+  if (currentScreen == 'd')
+    set_pixel(2,2);
 }
 
 void button3() {
-  set_pixel(3,3);
+  if (currentScreen == 'm')
+    currentScreen = 'd';
+
+  else if (currentScreen == 'd')
+    set_pixel(3,3);
 }
 
 void button4() {
-  set_pixel(4,4);
+  if (currentScreen == 'm')
+    set_pixel(4,4);
 }
 
 
