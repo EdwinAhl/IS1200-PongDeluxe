@@ -104,7 +104,24 @@ void labinit( void )
   IPC(2) = IPC(2) | 0b11100;  
   
   enable_interrupt(); // enable global interrupts
+
+  menu(); // start with
 }
+
+
+// init menu variable
+char currentScreen = 'm'; 
+
+/* menu with
+  1. Start game
+  2. Leadearboard
+*/ 
+void menu() {
+  display_string(0, "1. Start")
+  display_string(1, "2. Leaderboard")
+  display_string(0, "3. Debug")
+}
+
 
 void button1() {
   set_pixel(1,1);
