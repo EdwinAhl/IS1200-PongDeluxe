@@ -142,9 +142,8 @@ void display_string(int line, char *s) {
 }
 
 
-void display_image(uint8_t data[][128]) {
-	int i, j, x;
-  x = 1;
+void display_image(int x, uint8_t data[][128]) {
+	int i, j;
 
   //for (x = 0; x < 4; x++){
     for(i = 0; i < 4; i++) {
