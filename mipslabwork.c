@@ -35,6 +35,7 @@ void user_isr( void )
       display_update();
       tick ( &mytime );
       timeoutcount = 0;
+      display_image(0, display);
     }
   }
 
@@ -63,8 +64,8 @@ void labinit( void )
   IEC(0) = IEC(0) | 0b1000000000000000; // bit 15 enable INT3
   IPC(3) = IPC(3) | 0b11100000000000000000000000000; // bit 26-28 priority for INT3 external interrupt 3
 
+  display[2] = 255;
   enable_interrupt();
-
 }
 
 
