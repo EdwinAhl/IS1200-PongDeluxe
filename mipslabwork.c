@@ -143,7 +143,7 @@ void button4() {
 /* This function is called repetitively from the main program */
 void labwork( void )
 {
-  display_image(display);
+  display_image(1, display);
 
   // intializing buttons and switches as variables
   int buttons = getbtns();
