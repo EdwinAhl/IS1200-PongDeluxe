@@ -109,7 +109,7 @@ void labinit( void )
 /* This function is called repetitively from the main program */
 void labwork( void )
 {
-  display_image(0, display);
+  display_image(display);
 
   // intializing buttons and switches as variables
   int buttons = getbtns();
