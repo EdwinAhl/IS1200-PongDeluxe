@@ -77,7 +77,7 @@ void tick( unsigned int * timep )
    There's one parameter: the address to read and display.
 
    Note: When you use this function, you should comment out any
-   repeated calls to display_image; display_image overwrites
+   repeated calls to display__image; display__image overwrites
    about half of the digits shown by display_debug.
 */   
 void display_debug( volatile int * const addr )
@@ -142,7 +142,7 @@ void display_string(int line, char *s) {
 }
 
 
-void display_image(const uint8_t data[4][128]) {
+void display_image(uint8_t data[][128]) {
 	int i, j, x;
 
   for (x = 0; x < 4; x++){
