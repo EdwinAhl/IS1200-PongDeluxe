@@ -56,15 +56,14 @@ void labinit( void )
   // T2
   T2CON = 0b1000000001110000; 
   PR2 = 31250;  // (80M*10^6)/256/10
+  
+  //lights
   PORTE = 0; // lights off for now
 
   // timing interrupts
   IEC(0) = IEC(0) | 0b100000000;
   IPC(2) = IPC(2) | 0b11100;  
-
-  // sw3 interrupt
-  IEC(0) = IEC(0) | 0b1000000000000000; // bit 15 enable INT3
-  IPC(3) = IPC(3) | 0b11100000000000000000000000000; // bit 26-28 priority for INT3 external interrupt 3
+  
   display[1] = 225;
 
   enable_interrupt();
@@ -74,7 +73,22 @@ void labinit( void )
 /* This function is called repetitively from the main program */
 void labwork( void )
 {
-  //prime = nextprime ( prime );
-  //display_string ( 0, itoaconv ( prime ) );
-  //display_update();
+  // intializing buttons and switches as variables
+  int buttons = getbtns();
+  int switches = getsw();
+
+  // button 1
+  if((buttons & 0b01) == 1) { PORTE = 0b1}
+
+  // button 2
+  if((buttons & 0b10) == 2) { PORTE = 0b10}
+
+  // button 3
+  if((buttons & 0b100) == 4) { PORTE = 0b11 }
+
+  // button 4
+  if((buttons & 0b1000) == 8) { PORTE = 0b100 }
+
+
+  
 }
