@@ -83,10 +83,6 @@ void user_isr( void )
 /* Lab-specific initialization goes here */
 void labinit( void )
 {
-  // T2
-  T2CON = 0b1000000001110000; 
-  PR2 = 31250;  // (80M*10^6)/256/10
-
   // buttons
   TRISD = 0; // all off before toggling some on
   TRISD = 0b111110000; // bits 4-7 button inputs (bits 9-11 is for switches)
@@ -96,11 +92,15 @@ void labinit( void )
   TRISE = 0; // lights are outputs
   PORTE = 0; // lights off for now
 
+  // T2
+  T2CON = 0b1000000001110000; // timer on with PRE 256
+  PR2 = 31250;  // (80M*10^6)/256/10
+
   // timing interrupts
   IEC(0) = IEC(0) | 0b100000000;
   IPC(2) = IPC(2) | 0b11100;  
   
-  enable_interrupt();
+  enable_interrupt(); // enable global interrupts
 }
 
 
