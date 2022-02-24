@@ -4,4 +4,4 @@
 
 int getsw() { return (PORTD >> 8) & 0xF; } // switches start at bit 8, get value of all 4
 
-int getbtns() { return (PORTD >> 4) & 0xF; } // buttons start at bit 4, get value of all 4
+int getbtns() { return ((PORTD >> 4) & 0b1110) | ((PORTF >> 1) & 0b1); } // buttons start at bit 4, get value of all 4
