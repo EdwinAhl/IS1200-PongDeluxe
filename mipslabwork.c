@@ -46,8 +46,9 @@ uint8_t display[4][128] = {
 void clear_display() {
   int i, j;
   for (i = 0; i < 4; i++)
-    for (j = 0; j < 128; j++)
+    for (j = 0; j < 128; j++) 
       display[i][j] = 0;
+  display_image(display);
 }
 
 void set_pixel(int x, int y) {
@@ -110,24 +111,32 @@ void labinit( void )
 
 
 // init menu variable
-char currentScreen = 'm'; 
+char currentScreen; 
 
 /* menu with
   1. Start game
   2. Leadearboard
 */ 
 void menu() {
+  currentScreen = 'm'; // in menu
   display_string(0, "1. Start");
   display_string(1, "2. Leaderboard");
   display_string(3, "3. Debug");
   display_update();
 }
 
+void debug() {
+  clear_display(); // clears menu
+  currentScreen = 'd';
+
+  //test();
+}
+
 
 // buttons
 
 void button1() {
-  if (currentScreen == 'm')
+  if (currentScreen == 'd')
     set_pixel(1,1);
   
 }
@@ -138,36 +147,44 @@ void button2() {
 }
 
 void button3() {
-  if (currentScreen == 'm')
-    currentScreen = 'd';
+  if (currentScreen == 'm') {
+    debug();
+  }
 
   else if (currentScreen == 'd')
     set_pixel(3,3);
 }
 
 void button4() {
-  if (currentScreen == 'm')
+  if (currentScreen == 'd')
     set_pixel(4,4);
+}
+
+
+// switch
+void switch1() {
+  if (currentScreen == 'd')
+    menu();
 }
 
 
 /* This function is called repetitively from the main program */
 void labwork( void )
 {
-  display_image(display);
+  // display image if not in menu
+  if (currentScreen != 'm')
+    display_image(display);
 
   // intializing buttons and switches as variables
   int buttons = getbtns();
   int switches = getsw();
 
-  if(switches>0) { clear_display(); }
-  
+  if(switches>0) { switch1(); } // switch 1
+
   if(buttons & 0b1) { button1(); } // button 1
   if(buttons & 0b10) {  button2(); } // button 2
   if(buttons & 0b100) {  button3(); } // button 3
   if(buttons & 0b1000) {  button4(); } // button 4
-
-  //test();
 }
 
 void test() {
