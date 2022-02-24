@@ -86,7 +86,6 @@ void labwork( void )
 
   // intializing buttons and switches as variables
   int buttons = getbtns();
-  int switches = getsw();
 
   // button 1
   if((buttons & 0b1) == 1) { set_pixel(1,1); }
