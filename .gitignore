@@ -1,4 +1,4 @@
 *.o
-.deps
 *.elf
 *.hex
+.deps
