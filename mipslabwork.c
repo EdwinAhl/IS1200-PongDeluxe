@@ -85,9 +85,9 @@ void labinit( void )
   PR2 = 31250;  // (80M*10^6)/256/10
 
   // buttons
-  TRISD = 0;
+  TRISD = 0; // all off before toggling some on
   TRISD = 0b111110000; // bits 4-7 button inputs (bits 9-11 is for switches)
-  PORTD = 0; 
+  PORTD = 0; // value of all buttons zero to begin with
   
   // lights
   TRISE = 0; // lights are outputs
@@ -117,7 +117,7 @@ void labwork( void )
   if((buttons & 0b100) == 4) { set_pixel(3,3); } // button 3
   if((buttons & 0b1000) == 8) { set_pixel(4,4); } // button 4
 
-  test();
+  //test();
 }
 
 void test() {
