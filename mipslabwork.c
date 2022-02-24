@@ -30,7 +30,7 @@ uint8_t display[] = {
 };
 
 void set_pixel(int x, int y){
-  display[x*4 + (y+1)/8] = 1 << (y % 8);
+  display[x*2 + (y+1)/8] = 1 << (y % 8);
 }
 
 
@@ -66,6 +66,10 @@ void labinit( void )
   // T2
   T2CON = 0b1000000001110000; 
   PR2 = 31250;  // (80M*10^6)/256/10
+
+  // buttons
+  TRISD = 0b111111100000; //bits 5-11 inputs
+  PORTD = 0;
   
   //lights
   TRISE = 0; // lights are outputs
@@ -76,7 +80,6 @@ void labinit( void )
   IPC(2) = IPC(2) | 0b11100;  
   
   enable_interrupt();
-  set_pixel(1,1);
 }
 
 
@@ -87,18 +90,22 @@ void labwork( void )
 
   // intializing buttons and switches as variables
   int buttons = getbtns();
-  int switches = getsw();
 
   // button 1
-  if((buttons & 0b0) == 1) { PORTE = 1; }
+  if((buttons & 0b1) == 1) { set_pixel(1,1); }
   
   // button 2
-  if((buttons & 0b10) == 2) { PORTE = 2; }
+  if((buttons & 0b10) == 2) { set_pixel(2,2); }
 
   // button 3
-  if((buttons & 0b100) == 4) { PORTE = 3; }
+  if((buttons & 0b100) == 4) { set_pixel(3,3); }
 
   // button 4
-  if((buttons & 0b1000) == 8) { PORTE = 4; }
-  
+  if((buttons & 0b1000) == 8) { set_pixel(4,4); }
+
+  /*
+  int i = 0;
+  for (i = 0; i<=31; i++)
+    set_pixel(i,i);
+  */
 }
