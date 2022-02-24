@@ -84,12 +84,12 @@ void user_isr( void )
 void labinit( void )
 {
   // button 1
-  TRISF = 0b10;
-  PORTF = 0;
+  TRISF = 0b10; // second bit in F
+  PORTF = 0; // value of button 1 zero to begin with
 
   // buttons 2-4
   TRISD = 0b111100000; // bits 5-7 buttons 2-4 as inputs (bits 9-11 is for switches)
-  PORTD = 0; // value of all buttons zero to begin with
+  PORTD = 0; // value of buttons 2-4 zero to begin with
   
   // lights
   TRISE = 0; // lights are outputs
@@ -129,5 +129,5 @@ void labwork( void )
 void test() {
   int i = 0;
     for (i = 0; i<=31; i++)
-      set_pixel(i+16,i);
+      set_pixel(i,i);
 }
