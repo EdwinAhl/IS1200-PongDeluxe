@@ -106,6 +106,22 @@ void labinit( void )
   enable_interrupt(); // enable global interrupts
 }
 
+void button1() {
+  set_pixel(1,1);
+}
+
+void button2() {
+  set_pixel(2,2);
+}
+
+void button3() {
+  set_pixel(3,3);
+}
+
+void button4() {
+  set_pixel(4,4);
+}
+
 
 /* This function is called repetitively from the main program */
 void labwork( void )
@@ -118,12 +134,12 @@ void labwork( void )
 
   if(switches>0) { clear_display(); }
   
-  if(buttons & 0b1) { set_pixel(1,1); } // button 1
-  if(buttons & 0b10) { set_pixel(2,2); } // button 2
-  if(buttons & 0b100) { set_pixel(3,3); } // button 3
-  if(buttons & 0b1000) { set_pixel(4,4); } // button 4
+  if(buttons & 0b1) { button1(); } // button 1
+  if(buttons & 0b10) {  button2(); } // button 2
+  if(buttons & 0b100) {  button3(); } // button 3
+  if(buttons & 0b1000) {  button4(); } // button 4
 
-  // test();
+  //test();
 }
 
 void test() {
