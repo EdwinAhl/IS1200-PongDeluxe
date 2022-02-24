@@ -70,15 +70,8 @@ void labinit( void )
   // timing interrupts
   IEC(0) = IEC(0) | 0b100000000;
   IPC(2) = IPC(2) | 0b11100;  
-<<<<<<< HEAD
-
-  // sw3 interrupt
-  IEC(0) = IEC(0) | 0b1000000000000000; // bit 15 enable INT3
-  IPC(3) = IPC(3) | 0b11100000000000000000000000000; // bit 26-28 priority for INT3 external interrupt 3
-=======
   
   display[1] = 225;
->>>>>>> 7635d1d1e37e980695292ad6b17e437fdc7f0ab8
 
   enable_interrupt();
   set_pixel(0,0);
@@ -88,12 +81,6 @@ void labinit( void )
 /* This function is called repetitively from the main program */
 void labwork( void )
 {
-<<<<<<< HEAD
-  display_image(0, display);
-  //prime = nextprime ( prime );
-  //display_string ( 0, itoaconv ( prime ) );
-  //display_update();
-=======
   // intializing buttons and switches as variables
   int buttons = getbtns();
   int switches = getsw();
@@ -109,5 +96,4 @@ void labwork( void )
 
   // button 4
   if((buttons & 0b1000) == 8) { PORTE = 0b100; }
->>>>>>> 7635d1d1e37e980695292ad6b17e437fdc7f0ab8
 }
