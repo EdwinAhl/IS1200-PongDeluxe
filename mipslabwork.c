@@ -30,11 +30,7 @@ uint8_t display[] = {
 };
 
 void set_pixel(int x, int y){
-<<<<<<< HEAD
   display[y*4 + x] = 1 << (y % 8);
-=======
-  display[x*4 + (y+1)/8] = 1 << (y % 8);
->>>>>>> 912f1c9a7cdc597517bdf6609ad2be59a8c3f149
 }
 
 
