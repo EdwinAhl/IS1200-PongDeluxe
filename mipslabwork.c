@@ -19,7 +19,16 @@ int mytime = 0x5957;
 int prime = 1234567;
 
 char textstring[] = "";
-uint8_t display[128];
+uint8_t display[] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+
+void set_pixel(int x, int y){
+  display[x + y*32] =  1 << (8 - ( x % 8) );
+}
 
 int timeoutcount = 0;
 
@@ -33,11 +42,9 @@ void user_isr( void )
     if (timeoutcount++ == 10) {
       //time2string ( textstring, mytime );
       //display_string( 3, textstring );
-      textbuffer[0][0] = 0x1;
       display_update();
       tick ( &mytime );
       timeoutcount = 0;
-      display_image(0, display);
     }
   }
 
@@ -65,15 +72,16 @@ void labinit( void )
   // sw3 interrupt
   IEC(0) = IEC(0) | 0b1000000000000000; // bit 15 enable INT3
   IPC(3) = IPC(3) | 0b11100000000000000000000000000; // bit 26-28 priority for INT3 external interrupt 3
-  display[1] = 225;
 
   enable_interrupt();
+  set_pixel(0,0);
 }
 
 
 /* This function is called repetitively from the main program */
 void labwork( void )
 {
+  display_image(0, display);
   //prime = nextprime ( prime );
   //display_string ( 0, itoaconv ( prime ) );
   //display_update();
