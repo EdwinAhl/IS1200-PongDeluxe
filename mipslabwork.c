@@ -127,8 +127,8 @@ float get_between(float input, int start, int end){
   } else return input;
 }
 
-#define SCREEN_WIDTH_FLOAT 127f
-#define SCREEN_HEIGHT_FLOAT 31f
+#define SCREEN_WIDTH_FLOAT 127
+#define SCREEN_HEIGHT_FLOAT 31
 
 int floor(float input) {
   return (int) input;
@@ -142,16 +142,16 @@ float ball_y_velocity = 1;
 
 // Middle value as start position // TODO make a reset_ball method for replaying
 // 0 <= x <= 127
-float ball_x = SCREEN_WIDTH_FLOAT / 2f;
+float ball_x = SCREEN_WIDTH_FLOAT / 2;
 // 0 <= y <= 31
-float ball_y = SCREEN_HEIGHT_FLOAT / 2f;
+float ball_y = SCREEN_HEIGHT_FLOAT / 2;
 
 // Inverses the velocity on edge bounces.
 void set_new_velocity_on_edge() {
-  if (ball_x > SCREEN_WIDTH_FLOAT || ball_x < 0f) {
+  if (ball_x > SCREEN_WIDTH_FLOAT || ball_x < 0) {
     ball_x_velocity = -ball_x_velocity;
   }
-  if (ball_y > SCREEN_HEIGHT_FLOAT || ball_y < 0f){
+  if (ball_y > SCREEN_HEIGHT_FLOAT || ball_y < 0){
     ball_y_velocity = -ball_y_velocity;
   }
 }
