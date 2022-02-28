@@ -96,15 +96,11 @@ void clear_display() {
 // Only 0 <= x <= 127 working
 // Only 0 <= y <= 31 working
 void set_pixel(int x, int y) {
-  /* 
-    display is 4 32x32 cubes aligned horizontally, hence we have a 2d array with the cubes.
-    [x/32] picks the correct cube based on x coordinates
+  
+  // display is 4 32x32 cubes aligned horizontally, hence we have a 2d array with the cubes.
+  // [x/32] picks the correct cube based on x coordinates
     
-    The cube itself is a collection of 1x8 (8 pixels tall) columns aligned akin to text (LTR going down and left at newline)
-    Each pixel is set by a bit, eg 0000_0001 sets the upper most pixel.
-    x%32 selects the X coordinate in the cube, modulus as to make it work with multiple cubes
-
-<<<<<<< HEAD
+    
   // The cube itself is a collection of 1x8 (8 pixels tall) columns aligned akin to text (LTR going down and left at newline)
   // Each pixel is set by a bit, eg 0000_0001 sets the upper most pixel.
 
@@ -119,16 +115,6 @@ void set_pixel(int x, int y) {
   // This sets the pixel correctly in the column, y = 2 => 0000_0100, y = 5 => 0010_0000
   // Modulus since there's multiple columns. 
   display[x/32][x%32 + (y/8)*32] = display[x/32][x%32 + (y/8)*32] | 1 << (y % 8);
-=======
-    + (y/8)*32 is an additional offset y wise. The cubes have 4 rows, if y = 10 
-    then it'd use the second row and therefore adds 32 to the index (32 columns per row / 32 ints per row)
-    display[x/32][x%32 + (y/8)*32] | allow for setting bits in the same column, otherwise it'd overwrite the bits.
-    1 << (y % 8)
-    This sets the pixel correctly in the column, y = 2 => 0000_0100, y = 5 => 0010_0000
-    Modulus since there's multiple columns. 
-  */
-  display[x/32][x%32 + (y/8)*32] = display[x/32][x%32 + (y/8)*32] | 1 << (y % 8);  
->>>>>>> fcdcba1c9cb22c343b2dce4df16e6221905d68f4
 }
 
 // Caps the value fron the input based on start and end.
@@ -151,7 +137,6 @@ int ceil(float input) {
   return (int) (input + 1);
 }
 
-<<<<<<< HEAD
 float ball_x_velocity = 1;
 float ball_y_velocity = 1;
 
@@ -180,15 +165,6 @@ void update_ball_pos_based_on_velocity() {
 void display_ball() {
   // Sets the new velocity, important that it's called before get_between.
   set_new_velocity_on_edge();
-=======
-// Middle value as start position // TODO make a reset_ball method for replaying
-float ball_x = 63.5f; // 0 <= x <= 127
-float ball_y = 15.5f; // 0 <= y <= 31
-
-// WIP... handles ball coordinates and velocity
-void display_ball() {
-
->>>>>>> fcdcba1c9cb22c343b2dce4df16e6221905d68f4
   // Makes sure the ball is within the screen.
   ball_x = get_between(ball_x, SCREEN_WIDTH_FLOAT, 0);
   ball_y = get_between(ball_y, SCREEN_WIDTH_FLOAT, 0);
