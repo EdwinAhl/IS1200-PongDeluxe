@@ -58,8 +58,8 @@ void user_isr( void )
     // reset timeout
     if (timeoutcount++ == 10) {
       if (current_screen == DEBUG) {
-        // update_ball_pos_on_velocity();
-        // update_canvas();
+        update_ball_pos_on_velocity();
+        update_canvas();
       }
       timeoutcount = 0;
     }
@@ -162,8 +162,8 @@ int ceil(float input) {
 
 
 // ball x,y starting value
-float ball_x_velocity = 0.1;
-float ball_y_velocity = 0;
+float ball_x_velocity = 1;
+float ball_y_velocity = 1;
 
 
 // Middle value as start position // TODO make a reset_ball method for replaying
@@ -195,8 +195,8 @@ void display_ball() {
   //update_ball_pos_on_velocity();
   set_new_velocity_on_edge();  // Sets the new velocity, important that it's called before get_between.
   // Makes sure the ball is within the screen.
-  ball_x = get_between(ball_x, SCREEN_WIDTH_FLOAT, 0);
-  ball_y = get_between(ball_y, SCREEN_WIDTH_FLOAT, 0);
+  ball_x = get_between(ball_x, 0, SCREEN_WIDTH_FLOAT);
+  ball_y = get_between(ball_y, 0, SCREEN_HEIGHT_FLOAT);
 
   // clear_display(); // reset screen, //TODO PLACE SOMEWHERE ELSE
 
