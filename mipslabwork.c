@@ -156,6 +156,30 @@ void display_ball() {
 }
 
 
+// paddle values
+const float paddle_x = 10;
+float paddle1_y = 15.5f;
+float paddle2_y = 15.5f;
+
+// handles both paddles coordinates and velocity
+display_paddle() {
+  
+  // padle1
+  set_pixel(paddle_x, paddle1_y+2);
+  set_pixel(paddle_x, paddle1_y+1);
+  set_pixel(paddle_x, paddle1_y+0);
+  set_pixel(paddle_x, paddle1_y-1);
+  set_pixel(paddle_x, paddle1_y-2);
+
+  // padle2
+  set_pixel(127 - paddle_x, paddle2_y+2);
+  set_pixel(127 - paddle_x, paddle2_y+1);
+  set_pixel(127 - paddle_x, paddle2_y+0);
+  set_pixel(127 - paddle_x, paddle2_y-1);
+  set_pixel(127 - paddle_x, paddle2_y-2);
+}
+
+
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////
   SCREEN
