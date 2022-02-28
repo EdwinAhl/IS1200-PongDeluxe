@@ -30,6 +30,10 @@
 #define LEADERBOARD 'l'
 #define DEBUG 'd'
 
+// screen size definitions
+#define SCREEN_WIDTH_FLOAT 127
+#define SCREEN_HEIGHT_FLOAT 31
+
 // init current screen variable
 char current_screen; 
 int option_delay = 0; // delay for switching between options so same button isn't pressed immediately
@@ -51,13 +55,11 @@ void user_isr( void )
     TMR2 = 0; // reset timer for timer2
     total_timeout++;
 
-    
-    
     // reset timeout
     if (timeoutcount++ == 10) {
       if (current_screen == DEBUG) {
-        update_ball_pos_on_velocity();
-        update_canvas();
+        //update_ball_pos_on_velocity();
+        //update_canvas();
       }
       timeoutcount = 0;
     }
@@ -138,6 +140,7 @@ void set_pixel(int x, int y) {
   display[x/32][x%32 + (y/8)*32] = display[x/32][x%32 + (y/8)*32] | 1 << (y % 8);
 }
 
+
 // Caps the value fron the input based on start and end.
 // Used in display_ball to not overshoot the ball.
 float get_between(float input, int start, int end){
@@ -148,8 +151,6 @@ float get_between(float input, int start, int end){
   } else return input;
 }
 
-#define SCREEN_WIDTH_FLOAT 127
-#define SCREEN_HEIGHT_FLOAT 31
 
 int floor(float input) {
   return (int) input;
@@ -158,14 +159,16 @@ int ceil(float input) {
   return (int) (input + 1);
 }
 
+
+// ball x,y starting value
 float ball_x_velocity = 0.1;
 float ball_y_velocity = 0.1;
 
+
 // Middle value as start position // TODO make a reset_ball method for replaying
-// 0 <= x <= 127
-float ball_x = SCREEN_WIDTH_FLOAT / 2;
-// 0 <= y <= 31
-float ball_y = SCREEN_HEIGHT_FLOAT / 2;
+float ball_x = SCREEN_WIDTH_FLOAT / 2; // 0 <= x <= 127
+float ball_y = SCREEN_HEIGHT_FLOAT / 2; // 0 <= y <= 31
+
 
 // Inverses the velocity on edge bounces.
 void set_new_velocity_on_edge() {
@@ -177,16 +180,19 @@ void set_new_velocity_on_edge() {
   }
 }
 
+
 // Might need shorter name but this is good enough for now.
 void update_ball_pos_on_velocity() {
   ball_x += ball_x_velocity;
   ball_y += ball_y_velocity;
 }
 
-//
+
+// creates the ball and displays it based on it's position
 void display_ball() {
-  // Sets the new velocity, important that it's called before get_between.
-  set_new_velocity_on_edge();
+
+  update_ball_pos_on_velocity();
+  set_new_velocity_on_edge();  // Sets the new velocity, important that it's called before get_between.
   // Makes sure the ball is within the screen.
   ball_x = get_between(ball_x, SCREEN_WIDTH_FLOAT, 0);
   ball_y = get_between(ball_y, SCREEN_WIDTH_FLOAT, 0);
@@ -213,11 +219,12 @@ float paddle2_y = 15.5f;
 // handles both paddles coordinates and velocity
 display_paddle() {
   
-  // correct value on paddles
-  paddle1_y = get_between(paddle1_y, 3, 31-3);
-  paddle2_y = get_between(paddle2_y, 3, 31-3);
+  // get correct value on paddles
+  paddle1_y = get_between(paddle1_y, (paddle_x+1)/2, 31-(paddle_x+1)/2);
+  paddle2_y = get_between(paddle2_y, (paddle_x+1)/2, 31-(paddle_x+1)/2);
 
   // padle1
+  set_pixel(paddle_x-1, paddle1_y+4);
   set_pixel(paddle_x, paddle1_y+3);
   set_pixel(paddle_x, paddle1_y+2);
   set_pixel(paddle_x, paddle1_y+1);
@@ -225,8 +232,10 @@ display_paddle() {
   set_pixel(paddle_x, paddle1_y-1);
   set_pixel(paddle_x, paddle1_y-2);
   set_pixel(paddle_x, paddle1_y-3);
+  set_pixel(paddle_x-1, paddle1_y-4);
 
   // padle2
+  set_pixel(127 - paddle_x+1, paddle2_y+4);
   set_pixel(127 - paddle_x, paddle2_y+3);
   set_pixel(127 - paddle_x, paddle2_y+2);
   set_pixel(127 - paddle_x, paddle2_y+1);
@@ -234,6 +243,7 @@ display_paddle() {
   set_pixel(127 - paddle_x, paddle2_y-1);
   set_pixel(127 - paddle_x, paddle2_y-2);
   set_pixel(127 - paddle_x, paddle2_y-3);
+  set_pixel(127 - paddle_x+1, paddle2_y-4);
 }
 
 
