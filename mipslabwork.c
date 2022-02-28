@@ -85,14 +85,31 @@ void clear_display() {
   for (i = 0; i < 4; i++)
     for (j = 0; j < 128; j++) 
       display[i][j] = 0;
-  display_image(display); 
+  display_image(display);
 }
 
 
-// sets pixel on dislay to an x,y value 
+// sets pixel on dislay to an x, y value
+// Only 0 <= x <= 127 working
+// Only 0 <= y <= 31 working
 void set_pixel(int x, int y) {
-  // needs explaination...
-  display[x/32][(x%32) + (y/8)*32] = display[x/32][x%32 + (y/8)*32] | 1 << (y % 8);  
+  // display is 4 32x32 cubes aligned horizontally, hence we have a 2d array with the cubes.
+  // [x/32] picks the correct cube based on x coordinates
+
+  // The cube itself is a collection of 1x8 (8 pixels tall) columns aligned akin to text (LTR going down and left at newline)
+  // Each pixel is set by a bit, eg 0000_0001 sets the upper most pixel.
+
+  // x%32 selects the X coordinate in the cube, modulus as to make it work with multiple cubes
+  
+  // + (y/8)*32 is an additional offset y wise. The cubes have 4 rows, if y = 10 
+  // then it'd use the second row and therefore adds 32 to the index (32 columns per row / 32 ints per row)
+
+  // display[x/32][x%32 + (y/8)*32] | allow for setting bits in the same column, otherwise it'd overwrite the bits.
+
+  // 1 << (y % 8)
+  // This sets the pixel correctly in the column, y = 2 => 0000_0100, y = 5 => 0010_0000
+  // Modulus since there's multiple columns. 
+  display[x/32][x%32 + (y/8)*32] = display[x/32][x%32 + (y/8)*32] | 1 << (y % 8);  
 }
 
 
