@@ -85,7 +85,7 @@ void clear_display() {
   for (i = 0; i < 4; i++)
     for (j = 0; j < 128; j++) 
       display[i][j] = 0;
-  display_image(display); 
+  //display_image(display); 
 }
 
 
@@ -120,7 +120,7 @@ void display_ball(float x, float y)
 
 /* init menu variable
   m = menu
-  s = start
+  p = play
   v = singleplayer
   w = multiplayer 
   l = leaderboard
@@ -134,7 +134,7 @@ int optionsdelay = 0; // delay for switching between options so same button isn'
 void menu() {
   currentScreen = 'm'; // in menu
   display_string(0, "--PONG DELUXE--");
-  display_string(1, "1. Start");
+  display_string(1, "1. Play");
   display_string(2, "2. Leaderboard");
   display_string(3, "3. Debug");
   display_update();
@@ -142,11 +142,12 @@ void menu() {
 
 
 // start screen
-void start() {
-  currentScreen = 's'; // in screen
+void play() {
+  currentScreen = 'p'; // in screen
   display_string(0, "1. Singleplayer");
   display_string(1, "2. Multiplayer");
   display_string(2, "3. Back");
+  display_string(3, "");
   display_update();
 }
 
@@ -157,7 +158,9 @@ void singleplayer() {
 
   // TEMPORARY
   display_string(0, "Singleplayer");
-  display_string(0, "3. Back");
+  display_string(1, "3. Back");
+  display_string(2, "");
+  display_string(3, "");
   display_update();
 }
 
@@ -168,7 +171,9 @@ void multiplayer() {
 
   // TEMPORARY
   display_string(0, "Multiplayer");
-  display_string(0, "3. Back");
+  display_string(1, "3. Back");
+  display_string(2, "");
+  display_string(3, "");
   display_update();
 }
 
@@ -179,7 +184,9 @@ void leaderboard() {
 
   // TEMPORARY
   display_string(0, "Leaderboard");
-  display_string(0, "3. Back");
+  display_string(1, "3. Back");
+  display_string(2, "");
+  display_string(3, "");
   display_update();
 }
 
@@ -203,13 +210,11 @@ void debug() {
 
 
 
-
-
 /*//////////////////////////////////////////////////////////////////////////////////////////////////
   IO
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
-const int delayvalue = 1; // how much to delay
+const int delayvalue = 2; // how much to delay
 
 
 // BTN1
@@ -217,14 +222,15 @@ void button1() {
 
   // if enough delay has passed
   if ((totaltimeout-optionsdelay) > delayvalue) {
+    clear_display();
 
     // menu
     if (currentScreen = 'm') {
-      start();
+      play();
     }
 
-    // start
-    else if (currentScreen = 's') {
+    // play
+    else if (currentScreen = 'p') {
       singleplayer();
     }
 
@@ -243,14 +249,15 @@ void button2() {
 
   // if enough delay has passed
   if (totaltimeout-optionsdelay > delayvalue) {
+    clear_display();
 
     // menu
     if (currentScreen == 'm') {
       leaderboard();
     }
 
-    // start
-    else if (currentScreen == 's') {
+    // play
+    else if (currentScreen == 'p') {
       multiplayer();
     }
 
@@ -260,7 +267,8 @@ void button2() {
   // debug
   else if (currentScreen == 'd') {
     display_ball(ball_values[0], ball_values[1]-1); // move ball in -x in debug
-  }}
+  }
+}
 
 
 // BTN3
@@ -268,6 +276,7 @@ void button3() {
 
   // if enough delay has passed
   if (totaltimeout-optionsdelay > delayvalue) {
+    clear_display();
 
     // menu, go to debug
     if (currentScreen == 'm') {
@@ -276,15 +285,14 @@ void button3() {
     }
 
     // start or leaderboard, go back to menu
-    else if (currentScreen == 's' || currentScreen == 'l') {
+    else if (currentScreen == 'p' || currentScreen == 'l') {
       menu();
     }
 
     // TEMPORARY... singleplayer or multiplayer 
     else if (currentScreen == 'v' || currentScreen == 'w') {
-      start();
+      play();
     }
-
       optionsdelay = totaltimeout; // reset optionsdelay to present totaltimeout
   }
 
@@ -317,9 +325,10 @@ void switch1() {
 /* This function is called repetitively from the main program */
 void labwork( void )
 {
-  // display image if not in menu
-  if (currentScreen != 'm')
+  //display image if not in menu
+  if (currentScreen == 'd') {
     display_image(display);
+  } 
 
   // intializing buttons and switches as variables
   int buttons = getbtns();
