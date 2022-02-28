@@ -154,27 +154,43 @@ void display_ball() {
 }
 
 
-// paddle values
-const float paddle_x = 10;
+// paddle values, 7 pixles 
+const float paddle_x = 7;
 float paddle1_y = 15.5f;
 float paddle2_y = 15.5f;
 
 // handles both paddles coordinates and velocity
 display_paddle() {
   
+  //
+  paddle1_y = getBetween(paddle1_y, 3, 31-3);
+  paddle2_y = getBetween(paddle2_y, 3, 31-3);
+
   // padle1
+  set_pixel(paddle_x, paddle1_y+3);
   set_pixel(paddle_x, paddle1_y+2);
   set_pixel(paddle_x, paddle1_y+1);
   set_pixel(paddle_x, paddle1_y+0);
   set_pixel(paddle_x, paddle1_y-1);
   set_pixel(paddle_x, paddle1_y-2);
+  set_pixel(paddle_x, paddle1_y-3);
 
   // padle2
+  set_pixel(127 - paddle_x, paddle2_y+3);
   set_pixel(127 - paddle_x, paddle2_y+2);
   set_pixel(127 - paddle_x, paddle2_y+1);
   set_pixel(127 - paddle_x, paddle2_y+0);
   set_pixel(127 - paddle_x, paddle2_y-1);
   set_pixel(127 - paddle_x, paddle2_y-2);
+  set_pixel(127 - paddle_x, paddle2_y-3);
+}
+
+
+// updates the screen when moving pixles
+void updateCanvas() {
+  clear_display();
+  display_paddle();
+  display_image(display);
 }
 
 
@@ -268,12 +284,10 @@ void test() {
 void debug() {
 
   currentScreen = DEBUG;
-  clear_display();
 
   // test
-  display_ball();
-  test();
-  
+  updateCanvas();
+  //test(); 
 }
 
 
@@ -306,7 +320,8 @@ void button1() {
 
   // debug
   if (currentScreen == DEBUG) {
-    display_ball(); // move ball in +x in debug
+    paddle2_y--;
+    updateCanvas();
   }
 }
 
@@ -332,7 +347,8 @@ void button2() {
 
   // debug
   if (currentScreen == DEBUG) {
-    display_ball(); // move ball in -x in debug
+    paddle2_y++;
+    updateCanvas();
   }
 }
 
@@ -362,7 +378,8 @@ void button3() {
 
   // debug
   if (currentScreen == DEBUG) {
-    display_ball(); // move ball in +y in debug
+    paddle1_y--;
+    updateCanvas();
   }
 }
 
@@ -372,7 +389,8 @@ void button4() {
 
   // debug
   if (currentScreen == DEBUG) { // moves ball in -y if in debug 
-    display_ball();
+    paddle1_y++;
+    updateCanvas();
   }
 }
 
