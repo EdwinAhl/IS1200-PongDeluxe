@@ -15,6 +15,7 @@
 #include <stdint.h>   /* Declarations of uint_32 and the like */
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
 #include "mipslab.h"  /* Declatations for these labs */
+
 //#include <string.h>   // ??
 
 
@@ -85,11 +86,7 @@ void clear_display() {
   for (i = 0; i < 4; i++)
     for (j = 0; j < 128; j++) 
       display[i][j] = 0;
-<<<<<<< HEAD
-  display_image(display);
-=======
   //display_image(display); 
->>>>>>> 3798431fec33e73e14ffd72d55b8877dbeefe0c6
 }
 
 
@@ -116,22 +113,46 @@ void set_pixel(int x, int y) {
   display[x/32][x%32 + (y/8)*32] = display[x/32][x%32 + (y/8)*32] | 1 << (y % 8);  
 }
 
+// Middle value as start position // TODO make a reset_ball method for replaying
+// 0 <= x <= 127
+float ball_x = 63.5f;
+// 0 <= y <= 31
+float ball_y = 15.5f;
 
-float ball_values[2]; // x,y coordinate
-int last_display_ball = 0; 
+// Caps the value fron the input based on start and end.
+// Used in display_ball to not overshoot the ball.
+float getBetween(float input, int start, int end){
+  if (input > end){
+    return end;
+  } else if (input < start) {
+    return start;
+  } else return input;
+}
+
+int floor(float input) {
+  return (int) input;
+}
+int ceil(float input) {
+  return (int) (input + 1);
+}
 
 // WIP... handles ball coordinates and velocity
-void display_ball(float x, float y)
-{
-  // if balls new coordinates is withing limit
-  if ((x>=0 && x<=127) && (y>=0 && y<=31) && (totaltimeout - last_display_ball > 0)) {
-    clear_display(); // reset screen
-    set_pixel(x, y);
-    ball_values[0] = x;
-    ball_values[1] = y;
-    last_display_ball = totaltimeout;
-    display_image(display);
-  }
+void display_ball() {
+  // Makes sure the ball is within the screen.
+  ball_x = getBetween(ball_x, 127, 0);
+  ball_y = getBetween(ball_y, 127, 0);
+
+  clear_display(); // reset screen, //TODO PLACE SOMEWHERE ELSE
+
+  // Creates 4 pixels for the ball based on the center point.
+  set_pixel(floor(ball_x), floor(ball_y));
+  set_pixel(floor(ball_x), ceil(ball_y));
+
+  set_pixel(ceil(ball_x), ceil(ball_y));
+  set_pixel(ceil(ball_x), floor(ball_y));
+
+  //last_display_ball = totaltimeout;
+  display_image(display); //TODO PLACE SOMEWHERE ELSE
 }
 
 
@@ -228,7 +249,7 @@ void debug() {
   clear_display();
 
   // test
-  display_ball(64, 15);
+  display_ball();
   test();
   
 }
@@ -263,7 +284,7 @@ void button1() {
 
   // debug
   if (currentScreen == DEBUG) {
-    display_ball(ball_values[0], ball_values[1]+1); // move ball in +x in debug
+    display_ball(); // move ball in +x in debug
   }
 }
 
@@ -289,7 +310,7 @@ void button2() {
 
   // debug
   if (currentScreen == DEBUG) {
-    display_ball(ball_values[0], ball_values[1]-1); // move ball in -x in debug
+    display_ball(); // move ball in -x in debug
   }
 }
 
@@ -319,7 +340,7 @@ void button3() {
 
   // debug
   if (currentScreen == DEBUG) {
-    display_ball(ball_values[0]+1, ball_values[1]); // move ball in +y in debug
+    display_ball(); // move ball in +y in debug
   }
 }
 
@@ -329,7 +350,7 @@ void button4() {
 
   // debug
   if (currentScreen == DEBUG) { // moves ball in -y if in debug 
-    display_ball(ball_values[0]-1, ball_values[1]);
+    display_ball();
   }
 }
 
