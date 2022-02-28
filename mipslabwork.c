@@ -8,13 +8,15 @@
 
    This file modified 2017-04-31 by Ture Teknolog 
 
-   For copyright and licensing, see file COPYING */
+   For copyright and licensing, see file COPYING 
+*/
 
 
 #include <stdint.h>   /* Declarations of uint_32 and the like */
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
 #include "mipslab.h"  /* Declatations for these labs */
-#include <string.h>   // ??
+//#include <string.h>   // ??
+
 
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,14 +85,14 @@ void clear_display() {
   for (i = 0; i < 4; i++)
     for (j = 0; j < 128; j++) 
       display[i][j] = 0;
-  display_image(display);
+  display_image(display); 
 }
 
 
 // sets pixel on dislay to an x,y value 
 void set_pixel(int x, int y) {
   // needs explaination...
-  display[x/32][(x%32) + (y/8)*32] = display[x/32][x + (y/8)*32] | 1 << (y % 8);  
+  display[x/32][(x%32) + (y/8)*32] = display[x/32][x%32 + (y/8)*32] | 1 << (y % 8);  
 }
 
 
@@ -116,36 +118,90 @@ void display_ball(float x, float y)
   SCREEN
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
-// init menu variable
+/* init menu variable
+  m = menu
+  s = start
+  v = singleplayer
+  w = multiplayer 
+  l = leaderboard
+  d = debug
+*/
 char currentScreen; 
+int optionsdelay = 0; // delay for switching between options so same button isn't pressed immediately
 
 
 // menu screen, number corresponds to button 
 void menu() {
   currentScreen = 'm'; // in menu
-  display_string(0, "1. Start");
-  display_string(1, "2. Leaderboard");
+  display_string(0, "--PONG DELUXE--");
+  display_string(1, "1. Start");
+  display_string(2, "2. Leaderboard");
   display_string(3, "3. Debug");
   display_update();
 }
 
 
-// debug  screen
-int last_debug = 0;
-void debug() {
-  currentScreen = 'd';
-  clear_display();
-  display_ball(64, 15);
-
-  //test();
+// start screen
+void start() {
+  currentScreen = 's'; // in screen
+  display_string(0, "1. Singleplayer");
+  display_string(1, "2. Multiplayer");
+  display_string(2, "3. Back");
+  display_update();
 }
 
-// testing function for debug
+
+// WIP... singleplayer screen
+void singleplayer() {
+  currentScreen = 'v'; // in singleplayer
+
+  // TEMPORARY
+  display_string(0, "Singleplayer");
+  display_string(0, "3. Back");
+  display_update();
+}
+
+
+// WIP... multiplayer screen
+void multiplayer() {
+  currentScreen = 'w'; // in multiplayer
+
+  // TEMPORARY
+  display_string(0, "Multiplayer");
+  display_string(0, "3. Back");
+  display_update();
+}
+
+
+// WIP... leaderboard screen
+void leaderboard() {
+  currentScreen = 'l'; // in leaderboard
+
+  // TEMPORARY
+  display_string(0, "Leaderboard");
+  display_string(0, "3. Back");
+  display_update();
+}
+
+
+// testing function for debug, subject to change
 void test() {
   int i = 0;
     for (i = 0; i<=31; i++)
-      set_pixel(i,i);
+      set_pixel(i+96,i);
 }
+
+// debug  screen, subject to change
+void debug() {
+  currentScreen = 'd';
+  clear_display();
+
+  // test
+  display_ball(64, 15);
+  test();
+}
+
+
 
 
 
@@ -153,36 +209,91 @@ void test() {
   IO
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
+const int delayvalue = 1; // how much to delay
+
+
 // BTN1
 void button1() {
 
+  // if enough delay has passed
+  if ((totaltimeout-optionsdelay) > delayvalue) {
+
+    // menu
+    if (currentScreen = 'm') {
+      start();
+    }
+
+    // start
+    else if (currentScreen = 's') {
+      singleplayer();
+    }
+
+    optionsdelay = totaltimeout; // reset optionsdelay to present totaltimeout
+  } 
+
   // debug
-  if (currentScreen == 'd')
+  else if (currentScreen == 'd') {
     display_ball(ball_values[0], ball_values[1]+1); // move ball in +x in debug
+  }
 }
+
 
 // BTN2
 void button2() {
 
+  // if enough delay has passed
+  if (totaltimeout-optionsdelay > delayvalue) {
+
+    // menu
+    if (currentScreen == 'm') {
+      leaderboard();
+    }
+
+    // start
+    else if (currentScreen == 's') {
+      multiplayer();
+    }
+
+    optionsdelay = totaltimeout; // reset optionsdelay to present totaltimeout
+  }
+
   // debug
-  if (currentScreen == 'd')
+  else if (currentScreen == 'd') {
     display_ball(ball_values[0], ball_values[1]-1); // move ball in -x in debug
-}
+  }}
+
 
 // BTN3
 void button3() {
-  
-  //menu
-  if (currentScreen == 'm') {
-    last_debug = totaltimeout; 
-    debug();
+
+  // if enough delay has passed
+  if (totaltimeout-optionsdelay > delayvalue) {
+
+    // menu, go to debug
+    if (currentScreen == 'm') {
+      optionsdelay = totaltimeout; 
+      debug();
+    }
+
+    // start or leaderboard, go back to menu
+    else if (currentScreen == 's' || currentScreen == 'l') {
+      menu();
+    }
+
+    // TEMPORARY... singleplayer or multiplayer 
+    else if (currentScreen == 'v' || currentScreen == 'w') {
+      start();
+    }
+
+      optionsdelay = totaltimeout; // reset optionsdelay to present totaltimeout
   }
 
   // debug
-  else if (currentScreen == 'd' && (totaltimeout-last_debug > 2)) {
+  else if (currentScreen == 'd') {
     display_ball(ball_values[0]+1, ball_values[1]); // move ball in +y in debug
   }
 }
+
 
 // BTN4
 void button4() {
@@ -192,6 +303,7 @@ void button4() {
     display_ball(ball_values[0]-1, ball_values[1]);
   }
 }
+
 
 // SW1
 void switch1() {
@@ -213,7 +325,7 @@ void labwork( void )
   int buttons = getbtns();
   int switches = getsw();
 
-  if(switches>0) { switch1(); } // switch 1
+  if(switches > 0) { switch1(); } // switch 1
 
   if(buttons & 0b1) { button1(); } // button 1
   if(buttons & 0b10) {  button2(); } // button 2
@@ -247,5 +359,5 @@ void labinit( void )
   
   enable_interrupt(); // enable global interrupts
 
-  menu(); // start with
+  menu(); // start with menu
 }
