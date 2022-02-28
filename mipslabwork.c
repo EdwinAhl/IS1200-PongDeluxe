@@ -12,11 +12,27 @@
 */
 
 
+
+/*//////////////////////////////////////////////////////////////////////////////////////////////////
+  CONST
+*///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// include
 #include <stdint.h>   /* Declarations of uint_32 and the like */
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
 #include "mipslab.h"  /* Declatations for these labs */
 
-//#include <string.h>   // ??
+// screen state definitions
+#define MENU 'm'
+#define PLAY 'p'
+#define SINGLEPLAYER 'v'
+#define MULTIPLAYER 'w'
+#define LEADERBOARD 'l'
+#define DEBUG 'd'
+
+// init current screen variable
+char current_screen; 
+int option_delay = 0; // delay for switching between options so same button isn't pressed immediately
 
 
 
@@ -35,9 +51,14 @@ void user_isr( void )
     TMR2 = 0; // reset timer for timer2
     total_timeout++;
 
-    update_ball_pos_on_velocity();
+    
+    
     // reset timeout
     if (timeoutcount++ == 10) {
+      if (current_screen == DEBUG) {
+        update_ball_pos_on_velocity();
+        update_canvas();
+      }
       timeoutcount = 0;
     }
   }
@@ -137,8 +158,8 @@ int ceil(float input) {
   return (int) (input + 1);
 }
 
-float ball_x_velocity = 1;
-float ball_y_velocity = 1;
+float ball_x_velocity = 0.1;
+float ball_y_velocity = 0.1;
 
 // Middle value as start position // TODO make a reset_ball method for replaying
 // 0 <= x <= 127
@@ -162,6 +183,7 @@ void update_ball_pos_on_velocity() {
   ball_y += ball_y_velocity;
 }
 
+//
 void display_ball() {
   // Sets the new velocity, important that it's called before get_between.
   set_new_velocity_on_edge();
@@ -169,7 +191,7 @@ void display_ball() {
   ball_x = get_between(ball_x, SCREEN_WIDTH_FLOAT, 0);
   ball_y = get_between(ball_y, SCREEN_WIDTH_FLOAT, 0);
 
-  clear_display(); // reset screen, //TODO PLACE SOMEWHERE ELSE
+  // clear_display(); // reset screen, //TODO PLACE SOMEWHERE ELSE
 
   // Creates 4 pixels for the ball based on the center point.
   set_pixel(floor(ball_x), floor(ball_y));
@@ -179,7 +201,7 @@ void display_ball() {
   set_pixel(ceil(ball_x), floor(ball_y));
 
   //last_display_ball = totaltimeout;
-  display_image(display); //TODO PLACE SOMEWHERE ELSE
+  // display_image(display); //TODO PLACE SOMEWHERE ELSE
 }
 
 
@@ -228,19 +250,6 @@ void update_canvas() {
 /*//////////////////////////////////////////////////////////////////////////////////////////////////
   SCREEN
 *///////////////////////////////////////////////////////////////////////////////////////////////////
-
-// screen state definitions
-#define MENU 'm'
-#define PLAY 'p'
-#define SINGLEPLAYER 'v'
-#define MULTIPLAYER 'w'
-#define LEADERBOARD 'l'
-#define DEBUG 'd'
-
-// init current screen variable
-char current_screen; 
-int option_delay = 0; // delay for switching between options so same button isn't pressed immediately
-
 
 // menu screen, number corresponds to button 
 void menu() {
