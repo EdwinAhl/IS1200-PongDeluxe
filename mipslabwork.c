@@ -22,7 +22,7 @@
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
 int totaltimeout = 0; // global timer
-int timeoutcount = 0; // used to keep track of time loops
+int timeoutcount = 0; // used to keep track of number of time loops
 
 /* Interrupt Service Routine */
 void user_isr( void )
@@ -32,12 +32,9 @@ void user_isr( void )
     TMR2 = 0; // reset timer for timer2
     totaltimeout++;
 
-    if (timeoutcount++ == 10) {
-      //time2string ( textstring, mytime );
-      //display_string( 3, textstring );
-      //display_update();
+    // reset timeout
+    if (timeoutcount++ == 10) 
       timeoutcount = 0;
-    }
   }
 
   //only uses two interrupts, has to be switches
@@ -97,18 +94,19 @@ void set_pixel(int x, int y) {
 }
 
 
-// WIP... handles ball coordinates and velocity
 float ball_values[2]; // x,y coordinate
-int last_display_ball = 0;
+int last_display_ball = 0; 
+
+// WIP... handles ball coordinates and velocity
 void display_ball(float x, float y)
 {
-  clear_display(); // clear display to reset
-
   // if balls new coordinates is withing limit
-  if ((x>=2 && x<=127) && (y>=2 && y<=31) && (totaltimeout-last_display_ball > 2)) {
+  if ((x>=0 && x<=127) && (y>=0 && y<=31) && (totaltimeout - last_display_ball > 0)) {
+    clear_display(); // clear display to reset
     set_pixel(x, y);
     ball_values[0] = x;
     ball_values[1] = y;
+    last_display_ball = totaltimeout;
   }
 }
 
@@ -122,7 +120,7 @@ void display_ball(float x, float y)
 char currentScreen; 
 
 
-// menu start and leaderboard, number corresponds to button 
+// menu screen, number corresponds to button 
 void menu() {
   currentScreen = 'm'; // in menu
   display_string(0, "1. Start");
@@ -132,7 +130,7 @@ void menu() {
 }
 
 
-// debug 
+// debug  screen
 int last_debug = 0;
 void debug() {
   currentScreen = 'd';
@@ -155,38 +153,50 @@ void test() {
   IO
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
-// button1
+// BTN1
 void button1() {
+
+  // debug
   if (currentScreen == 'd')
-    display_ball(ball_values[0], ball_values[1]+1);
-  
+    display_ball(ball_values[0], ball_values[1]+1); // move ball in +x in debug
 }
 
-// button 2
+// BTN2
 void button2() {
+
+  // debug
   if (currentScreen == 'd')
-    display_ball(ball_values[0], ball_values[1]-1);
+    display_ball(ball_values[0], ball_values[1]-1); // move ball in -x in debug
 }
 
-// button 3
+// BTN3
 void button3() {
+  
+  //menu
   if (currentScreen == 'm') {
-    last_debug = totaltimeout;
+    last_debug = totaltimeout; 
     debug();
   }
 
-  else if (currentScreen == 'd' && (totaltimeout-last_debug > 2))
-    display_ball(ball_values[0]+1, ball_values[1]);
+  // debug
+  else if (currentScreen == 'd' && (totaltimeout-last_debug > 2)) {
+    display_ball(ball_values[0]+1, ball_values[1]); // move ball in +y in debug
+  }
 }
 
-// button 4
+// BTN4
 void button4() {
-  if (currentScreen == 'd') // moves ball in -y if in debug
+
+  // debug
+  if (currentScreen == 'd') { // moves ball in -y if in debug 
     display_ball(ball_values[0]-1, ball_values[1]);
+  }
 }
 
-// switch1
+// SW1
 void switch1() {
+
+  // debug
   if (currentScreen == 'd') // goes to menu if in debug
     menu();
 }
