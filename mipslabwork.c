@@ -85,7 +85,11 @@ void clear_display() {
   for (i = 0; i < 4; i++)
     for (j = 0; j < 128; j++) 
       display[i][j] = 0;
+<<<<<<< HEAD
   display_image(display);
+=======
+  //display_image(display); 
+>>>>>>> 3798431fec33e73e14ffd72d55b8877dbeefe0c6
 }
 
 
@@ -121,11 +125,12 @@ void display_ball(float x, float y)
 {
   // if balls new coordinates is withing limit
   if ((x>=0 && x<=127) && (y>=0 && y<=31) && (totaltimeout - last_display_ball > 0)) {
-    clear_display(); // clear display to reset
+    clear_display(); // reset screen
     set_pixel(x, y);
     ball_values[0] = x;
     ball_values[1] = y;
     last_display_ball = totaltimeout;
+    display_image(display);
   }
 }
 
@@ -135,23 +140,24 @@ void display_ball(float x, float y)
   SCREEN
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
-/* init menu variable
-  m = menu
-  s = start
-  v = singleplayer
-  w = multiplayer 
-  l = leaderboard
-  d = debug
-*/
+// screen state definitions
+#define MENU 'm'
+#define PLAY 'p'
+#define SINGLEPLAYER 'v'
+#define MULTIPLAYER 'w'
+#define LEADERBOARD 'l'
+#define DEBUG 'd'
+
+// init current screen variable
 char currentScreen; 
 int optionsdelay = 0; // delay for switching between options so same button isn't pressed immediately
 
 
 // menu screen, number corresponds to button 
 void menu() {
-  currentScreen = 'm'; // in menu
+  currentScreen = MENU; // in menu
   display_string(0, "--PONG DELUXE--");
-  display_string(1, "1. Start");
+  display_string(1, "1. Play");
   display_string(2, "2. Leaderboard");
   display_string(3, "3. Debug");
   display_update();
@@ -159,44 +165,51 @@ void menu() {
 
 
 // start screen
-void start() {
-  currentScreen = 's'; // in screen
+void play() {
+  currentScreen = PLAY; // in screen
   display_string(0, "1. Singleplayer");
   display_string(1, "2. Multiplayer");
   display_string(2, "3. Back");
+  display_string(3, "");
   display_update();
 }
 
 
 // WIP... singleplayer screen
 void singleplayer() {
-  currentScreen = 'v'; // in singleplayer
+  currentScreen = SINGLEPLAYER; // in singleplayer
 
   // TEMPORARY
   display_string(0, "Singleplayer");
-  display_string(0, "3. Back");
+  display_string(1, "3. Back");
+  display_string(2, "");
+  display_string(3, "");
   display_update();
 }
 
 
 // WIP... multiplayer screen
 void multiplayer() {
-  currentScreen = 'w'; // in multiplayer
+  currentScreen = MULTIPLAYER; // in multiplayer
 
   // TEMPORARY
   display_string(0, "Multiplayer");
-  display_string(0, "3. Back");
+  display_string(1, "3. Back");
+  display_string(2, "");
+  display_string(3, "");
   display_update();
 }
 
 
 // WIP... leaderboard screen
 void leaderboard() {
-  currentScreen = 'l'; // in leaderboard
+  currentScreen = LEADERBOARD; // in leaderboard
 
   // TEMPORARY
   display_string(0, "Leaderboard");
-  display_string(0, "3. Back");
+  display_string(1, "3. Back");
+  display_string(2, "");
+  display_string(3, "");
   display_update();
 }
 
@@ -210,15 +223,15 @@ void test() {
 
 // debug  screen, subject to change
 void debug() {
-  currentScreen = 'd';
+
+  currentScreen = DEBUG;
   clear_display();
 
   // test
   display_ball(64, 15);
   test();
+  
 }
-
-
 
 
 
@@ -226,7 +239,7 @@ void debug() {
   IO
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
-const int delayvalue = 1; // how much to delay
+const int delayvalue = 2; // how much to delay
 
 
 // BTN1
@@ -236,20 +249,20 @@ void button1() {
   if ((totaltimeout-optionsdelay) > delayvalue) {
 
     // menu
-    if (currentScreen = 'm') {
-      start();
+    if (currentScreen == MENU) {
+      currentScreen = PLAY;
     }
 
-    // start
-    else if (currentScreen = 's') {
-      singleplayer();
+    // play
+    else if (currentScreen == PLAY) {
+      currentScreen = SINGLEPLAYER;
     }
 
     optionsdelay = totaltimeout; // reset optionsdelay to present totaltimeout
   } 
 
   // debug
-  else if (currentScreen == 'd') {
+  if (currentScreen == DEBUG) {
     display_ball(ball_values[0], ball_values[1]+1); // move ball in +x in debug
   }
 }
@@ -262,22 +275,23 @@ void button2() {
   if (totaltimeout-optionsdelay > delayvalue) {
 
     // menu
-    if (currentScreen == 'm') {
-      leaderboard();
+    if (currentScreen == MENU) {
+      currentScreen = LEADERBOARD;
     }
 
-    // start
-    else if (currentScreen == 's') {
-      multiplayer();
+    // play
+    else if (currentScreen == PLAY) {
+      currentScreen = MULTIPLAYER;
     }
 
     optionsdelay = totaltimeout; // reset optionsdelay to present totaltimeout
   }
 
   // debug
-  else if (currentScreen == 'd') {
+  if (currentScreen == DEBUG) {
     display_ball(ball_values[0], ball_values[1]-1); // move ball in -x in debug
-  }}
+  }
+}
 
 
 // BTN3
@@ -287,26 +301,24 @@ void button3() {
   if (totaltimeout-optionsdelay > delayvalue) {
 
     // menu, go to debug
-    if (currentScreen == 'm') {
-      optionsdelay = totaltimeout; 
-      debug();
+    if (currentScreen == MENU) { 
+      currentScreen = DEBUG;
     }
 
     // start or leaderboard, go back to menu
-    else if (currentScreen == 's' || currentScreen == 'l') {
-      menu();
+    else if (currentScreen == PLAY || currentScreen == LEADERBOARD) {
+      currentScreen = MENU;
     }
 
-    // TEMPORARY... singleplayer or multiplayer 
-    else if (currentScreen == 'v' || currentScreen == 'w') {
-      start();
+    // TEMPORARY... singleplayer or multiplayer, go back to play
+    else if (currentScreen == SINGLEPLAYER || currentScreen == MULTIPLAYER) {
+      currentScreen = PLAY;
     }
-
-      optionsdelay = totaltimeout; // reset optionsdelay to present totaltimeout
+    optionsdelay = totaltimeout; // reset optionsdelay to present totaltimeout
   }
 
   // debug
-  else if (currentScreen == 'd') {
+  if (currentScreen == DEBUG) {
     display_ball(ball_values[0]+1, ball_values[1]); // move ball in +y in debug
   }
 }
@@ -316,7 +328,7 @@ void button3() {
 void button4() {
 
   // debug
-  if (currentScreen == 'd') { // moves ball in -y if in debug 
+  if (currentScreen == DEBUG) { // moves ball in -y if in debug 
     display_ball(ball_values[0]-1, ball_values[1]);
   }
 }
@@ -326,17 +338,60 @@ void button4() {
 void switch1() {
 
   // debug
-  if (currentScreen == 'd') // goes to menu if in debug
-    menu();
+  if (currentScreen == DEBUG) // goes to menu if in debug
+    currentScreen = MENU;
+}
+
+
+char oldScreen; // used to determine if user has switches screen
+
+// checks states and starts correct one
+void checkstate() {
+  
+  // won't update screen state if new state is same as old state
+  if (oldScreen != currentScreen) {
+    oldScreen = currentScreen;
+    
+    // clears display if not in debug 
+    if (currentScreen != DEBUG) {
+      clear_display();
+    }
+
+    // states
+    switch(currentScreen)
+    {
+      case MENU:
+        menu();
+        break;
+      
+      case PLAY:
+        play();
+        break;
+
+      case SINGLEPLAYER:
+        singleplayer();
+        break;
+
+      case MULTIPLAYER:
+        multiplayer();
+        break;
+
+      case LEADERBOARD:
+        leaderboard();
+        break;
+      
+      case DEBUG:
+        debug();
+        break;
+    }
+  }
 }
 
 
 /* This function is called repetitively from the main program */
 void labwork( void )
 {
-  // display image if not in menu
-  if (currentScreen != 'm')
-    display_image(display);
+  checkstate(); // checks current state for buttons to act accordingly
 
   // intializing buttons and switches as variables
   int buttons = getbtns();
