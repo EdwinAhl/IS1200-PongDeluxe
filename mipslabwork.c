@@ -14,48 +14,12 @@
 #include <stdint.h>   /* Declarations of uint_32 and the like */
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
 #include "mipslab.h"  /* Declatations for these labs */
-#include <string.h>
+#include <string.h>   // ??
 
 
-char textstring[] = "";
-uint8_t display[4][128] = {
-  {
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-  },
-  {
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  },
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  {
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  },
-};
-
-void clear_display() {
-  int i, j;
-  for (i = 0; i < 4; i++)
-    for (j = 0; j < 128; j++) 
-      display[i][j] = 0;
-  display_image(display);
-}
-
-void set_pixel(int x, int y) {
-  display[x/32][x + (y/8)*32] = display[x/32][x + (y/8)*32] | 1 << (y % 8);
-}
-
-
+/*//////////////////////////////////////////////////////////////////////////////////////////////////
+  TIME
+*///////////////////////////////////////////////////////////////////////////////////////////////////
 
 int totaltimeout = 0; // global timer
 int timeoutcount = 0; // used to keep track of time loops
@@ -81,6 +45,170 @@ void user_isr( void )
     IFS(0) = IFS(0) & ~0b1000000000000000; // bit 15 resets INT3
     PORTE++; //increase 
   }
+}
+
+
+
+/*//////////////////////////////////////////////////////////////////////////////////////////////////
+  DISPLAY
+*///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// four 32x32 pixel display, in total 128x32
+uint8_t display[4][128] = {
+  {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  },
+  {
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  {
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+};
+
+
+// clears display by setting every value to 0
+void clear_display() {
+  int i, j;
+  for (i = 0; i < 4; i++)
+    for (j = 0; j < 128; j++) 
+      display[i][j] = 0;
+  display_image(display);
+}
+
+
+// sets pixel on dislay to an x,y value 
+void set_pixel(int x, int y) {
+  // needs explaination...
+  display[x/32][(x%32) + (y/8)*32] = display[x/32][x + (y/8)*32] | 1 << (y % 8);  
+}
+
+
+// WIP... handles ball coordinates and velocity
+float ball_values[2]; // x,y coordinate
+int last_display_ball = 0;
+void display_ball(float x, float y)
+{
+  clear_display(); // clear display to reset
+
+  // if balls new coordinates is withing limit
+  if ((x>=2 && x<=127) && (y>=2 && y<=31) && (totaltimeout-last_display_ball > 2)) {
+    set_pixel(x, y);
+    ball_values[0] = x;
+    ball_values[1] = y;
+  }
+}
+
+
+
+/*//////////////////////////////////////////////////////////////////////////////////////////////////
+  SCREEN
+*///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// init menu variable
+char currentScreen; 
+
+
+// menu start and leaderboard, number corresponds to button 
+void menu() {
+  currentScreen = 'm'; // in menu
+  display_string(0, "1. Start");
+  display_string(1, "2. Leaderboard");
+  display_string(3, "3. Debug");
+  display_update();
+}
+
+
+// debug 
+int last_debug = 0;
+void debug() {
+  currentScreen = 'd';
+  clear_display();
+  display_ball(64, 15);
+
+  //test();
+}
+
+// testing function for debug
+void test() {
+  int i = 0;
+    for (i = 0; i<=31; i++)
+      set_pixel(i,i);
+}
+
+
+
+/*//////////////////////////////////////////////////////////////////////////////////////////////////
+  IO
+*///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// button1
+void button1() {
+  if (currentScreen == 'd')
+    display_ball(ball_values[0], ball_values[1]+1);
+  
+}
+
+// button 2
+void button2() {
+  if (currentScreen == 'd')
+    display_ball(ball_values[0], ball_values[1]-1);
+}
+
+// button 3
+void button3() {
+  if (currentScreen == 'm') {
+    last_debug = totaltimeout;
+    debug();
+  }
+
+  else if (currentScreen == 'd' && (totaltimeout-last_debug > 2))
+    display_ball(ball_values[0]+1, ball_values[1]);
+}
+
+// button 4
+void button4() {
+  if (currentScreen == 'd') // moves ball in -y if in debug
+    display_ball(ball_values[0]-1, ball_values[1]);
+}
+
+// switch1
+void switch1() {
+  if (currentScreen == 'd') // goes to menu if in debug
+    menu();
+}
+
+
+/* This function is called repetitively from the main program */
+void labwork( void )
+{
+  // display image if not in menu
+  if (currentScreen != 'm')
+    display_image(display);
+
+  // intializing buttons and switches as variables
+  int buttons = getbtns();
+  int switches = getsw();
+
+  if(switches>0) { switch1(); } // switch 1
+
+  if(buttons & 0b1) { button1(); } // button 1
+  if(buttons & 0b10) {  button2(); } // button 2
+  if(buttons & 0b100) {  button3(); } // button 3
+  if(buttons & 0b1000) {  button4(); } // button 4
 }
 
 
@@ -110,91 +238,4 @@ void labinit( void )
   enable_interrupt(); // enable global interrupts
 
   menu(); // start with
-}
-
-
-// init menu variable
-char currentScreen; 
-
-/* menu with
-  1. Start game
-  2. Leadearboard
-*/ 
-void menu() {
-  currentScreen = 'm'; // in menu
-  display_string(0, "1. Start");
-  display_string(1, "2. Leaderboard");
-  display_string(3, "3. Debug");
-  display_update();
-}
-
-void debug() {
-  clear_display(); // clears menu
-  currentScreen = 'd';
-
-  //test();
-}
-
-
-// buttons
-
-void button1() {
-  if (currentScreen == 'd')
-    set_pixel(1,1);
-  
-}
-
-void button2() {
-  if (currentScreen == 'd')
-    set_pixel(2,2);
-}
-
-int last_debug = 0;
-
-void button3() {
-  if (currentScreen == 'm') {
-    last_debug = totaltimeout;
-    debug();
-  }
-
-  else if (currentScreen == 'd' && (totaltimeout-last_debug > 2))
-    set_pixel(3,3);
-}
-
-void button4() {
-  if (currentScreen == 'd')
-    set_pixel(4,4);
-}
-
-
-// switch
-void switch1() {
-  if (currentScreen == 'd')
-    menu();
-}
-
-
-/* This function is called repetitively from the main program */
-void labwork( void )
-{
-  // display image if not in menu
-  if (currentScreen != 'm')
-    display_image(display);
-
-  // intializing buttons and switches as variables
-  int buttons = getbtns();
-  int switches = getsw();
-
-  if(switches>0) { switch1(); } // switch 1
-
-  if(buttons & 0b1) { button1(); } // button 1
-  if(buttons & 0b10) {  button2(); } // button 2
-  if(buttons & 0b100) {  button3(); } // button 3
-  if(buttons & 0b1000) {  button4(); } // button 4
-}
-
-void test() {
-  int i = 0;
-    for (i = 0; i<=31; i++)
-      set_pixel(i,i);
 }
