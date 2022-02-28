@@ -152,6 +152,7 @@ float get_between(float input, int start, int end){
 }
 
 
+// math floor and ceiling 
 int floor(float input) {
   return (int) input;
 }
@@ -220,7 +221,7 @@ float paddle2_y = 15.5f;
 display_paddle() {
   
   // get correct value on paddles
-  paddle1_y = get_between(paddle1_y, (paddle_x+1)/2, 31-(paddle_x+1)/2);
+  paddle1_y = get_between(paddle1_y, (paddle_x+1)/2, 31-(paddle_x+1)/2); //(paddle_x+1)/2 for it's with from the middle including bit
   paddle2_y = get_between(paddle2_y, (paddle_x+1)/2, 31-(paddle_x+1)/2);
 
   // padle1
