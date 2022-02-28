@@ -96,9 +96,15 @@ void clear_display() {
 // Only 0 <= x <= 127 working
 // Only 0 <= y <= 31 working
 void set_pixel(int x, int y) {
-  // display is 4 32x32 cubes aligned horizontally, hence we have a 2d array with the cubes.
-  // [x/32] picks the correct cube based on x coordinates
+  /* 
+    display is 4 32x32 cubes aligned horizontally, hence we have a 2d array with the cubes.
+    [x/32] picks the correct cube based on x coordinates
+    
+    The cube itself is a collection of 1x8 (8 pixels tall) columns aligned akin to text (LTR going down and left at newline)
+    Each pixel is set by a bit, eg 0000_0001 sets the upper most pixel.
+    x%32 selects the X coordinate in the cube, modulus as to make it work with multiple cubes
 
+<<<<<<< HEAD
   // The cube itself is a collection of 1x8 (8 pixels tall) columns aligned akin to text (LTR going down and left at newline)
   // Each pixel is set by a bit, eg 0000_0001 sets the upper most pixel.
 
@@ -113,6 +119,16 @@ void set_pixel(int x, int y) {
   // This sets the pixel correctly in the column, y = 2 => 0000_0100, y = 5 => 0010_0000
   // Modulus since there's multiple columns. 
   display[x/32][x%32 + (y/8)*32] = display[x/32][x%32 + (y/8)*32] | 1 << (y % 8);
+=======
+    + (y/8)*32 is an additional offset y wise. The cubes have 4 rows, if y = 10 
+    then it'd use the second row and therefore adds 32 to the index (32 columns per row / 32 ints per row)
+    display[x/32][x%32 + (y/8)*32] | allow for setting bits in the same column, otherwise it'd overwrite the bits.
+    1 << (y % 8)
+    This sets the pixel correctly in the column, y = 2 => 0000_0100, y = 5 => 0010_0000
+    Modulus since there's multiple columns. 
+  */
+  display[x/32][x%32 + (y/8)*32] = display[x/32][x%32 + (y/8)*32] | 1 << (y % 8);  
+>>>>>>> fcdcba1c9cb22c343b2dce4df16e6221905d68f4
 }
 
 // Caps the value fron the input based on start and end.
@@ -135,6 +151,7 @@ int ceil(float input) {
   return (int) (input + 1);
 }
 
+<<<<<<< HEAD
 float ball_x_velocity = 1;
 float ball_y_velocity = 1;
 
@@ -163,6 +180,15 @@ void update_ball_pos_based_on_velocity() {
 void display_ball() {
   // Sets the new velocity, important that it's called before get_between.
   set_new_velocity_on_edge();
+=======
+// Middle value as start position // TODO make a reset_ball method for replaying
+float ball_x = 63.5f; // 0 <= x <= 127
+float ball_y = 15.5f; // 0 <= y <= 31
+
+// WIP... handles ball coordinates and velocity
+void display_ball() {
+
+>>>>>>> fcdcba1c9cb22c343b2dce4df16e6221905d68f4
   // Makes sure the ball is within the screen.
   ball_x = get_between(ball_x, SCREEN_WIDTH_FLOAT, 0);
   ball_y = get_between(ball_y, SCREEN_WIDTH_FLOAT, 0);
@@ -178,6 +204,46 @@ void display_ball() {
 
   //last_display_ball = totaltimeout;
   display_image(display); //TODO PLACE SOMEWHERE ELSE
+}
+
+
+// paddle values, 7 pixles 
+const float paddle_x = 7;
+float paddle1_y = 15.5f;
+float paddle2_y = 15.5f;
+
+// handles both paddles coordinates and velocity
+display_paddle() {
+  
+  //
+  paddle1_y = getBetween(paddle1_y, 3, 31-3);
+  paddle2_y = getBetween(paddle2_y, 3, 31-3);
+
+  // padle1
+  set_pixel(paddle_x, paddle1_y+3);
+  set_pixel(paddle_x, paddle1_y+2);
+  set_pixel(paddle_x, paddle1_y+1);
+  set_pixel(paddle_x, paddle1_y+0);
+  set_pixel(paddle_x, paddle1_y-1);
+  set_pixel(paddle_x, paddle1_y-2);
+  set_pixel(paddle_x, paddle1_y-3);
+
+  // padle2
+  set_pixel(127 - paddle_x, paddle2_y+3);
+  set_pixel(127 - paddle_x, paddle2_y+2);
+  set_pixel(127 - paddle_x, paddle2_y+1);
+  set_pixel(127 - paddle_x, paddle2_y+0);
+  set_pixel(127 - paddle_x, paddle2_y-1);
+  set_pixel(127 - paddle_x, paddle2_y-2);
+  set_pixel(127 - paddle_x, paddle2_y-3);
+}
+
+
+// updates the screen when moving pixles
+void updateCanvas() {
+  clear_display();
+  display_paddle();
+  display_image(display);
 }
 
 
@@ -271,12 +337,10 @@ void test() {
 void debug() {
 
   currentScreen = DEBUG;
-  clear_display();
 
   // test
-  display_ball();
-  test();
-  
+  updateCanvas();
+  //test(); 
 }
 
 
@@ -309,7 +373,8 @@ void button1() {
 
   // debug
   if (currentScreen == DEBUG) {
-    display_ball(); // move ball in +x in debug
+    paddle2_y--;
+    updateCanvas();
   }
 }
 
@@ -335,7 +400,8 @@ void button2() {
 
   // debug
   if (currentScreen == DEBUG) {
-    display_ball(); // move ball in -x in debug
+    paddle2_y++;
+    updateCanvas();
   }
 }
 
@@ -365,7 +431,8 @@ void button3() {
 
   // debug
   if (currentScreen == DEBUG) {
-    display_ball(); // move ball in +y in debug
+    paddle1_y--;
+    updateCanvas();
   }
 }
 
@@ -375,7 +442,8 @@ void button4() {
 
   // debug
   if (currentScreen == DEBUG) { // moves ball in -y if in debug 
-    display_ball();
+    paddle1_y++;
+    updateCanvas();
   }
 }
 
