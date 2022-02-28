@@ -24,7 +24,7 @@
   TIME
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
-int totaltimeout = 0; // global timer
+int total_timeout = 0; // global timer
 int timeoutcount = 0; // used to keep track of number of time loops
 
 /* Interrupt Service Routine */
@@ -33,9 +33,9 @@ void user_isr( void )
   if (IFS(0) & 0b100000000) { // if interrupt is timer2
     IFS(0) = IFS(0) & ~0b100000000; // bit 8 resets timer2
     TMR2 = 0; // reset timer for timer2
-    totaltimeout++;
+    total_timeout++;
 
-    update_ball_pos_based_on_velocity();
+    update_ball_pos_on_velocity();
     // reset timeout
     if (timeoutcount++ == 10) {
       timeoutcount = 0;
@@ -157,7 +157,7 @@ void set_new_velocity_on_edge() {
 }
 
 // Might need shorter name but this is good enough for now.
-void update_ball_pos_based_on_velocity() {
+void update_ball_pos_on_velocity() {
   ball_x += ball_x_velocity;
   ball_y += ball_y_velocity;
 }
@@ -191,9 +191,9 @@ float paddle2_y = 15.5f;
 // handles both paddles coordinates and velocity
 display_paddle() {
   
-  //
-  paddle1_y = getBetween(paddle1_y, 3, 31-3);
-  paddle2_y = getBetween(paddle2_y, 3, 31-3);
+  // correct value on paddles
+  paddle1_y = get_between(paddle1_y, 3, 31-3);
+  paddle2_y = get_between(paddle2_y, 3, 31-3);
 
   // padle1
   set_pixel(paddle_x, paddle1_y+3);
@@ -216,9 +216,10 @@ display_paddle() {
 
 
 // updates the screen when moving pixles
-void updateCanvas() {
+void update_canvas() {
   clear_display();
   display_paddle();
+  display_ball();
   display_image(display);
 }
 
@@ -237,13 +238,13 @@ void updateCanvas() {
 #define DEBUG 'd'
 
 // init current screen variable
-char currentScreen; 
-int optionsdelay = 0; // delay for switching between options so same button isn't pressed immediately
+char current_screen; 
+int option_delay = 0; // delay for switching between options so same button isn't pressed immediately
 
 
 // menu screen, number corresponds to button 
 void menu() {
-  currentScreen = MENU; // in menu
+  current_screen = MENU; // in menu
   display_string(0, "--PONG DELUXE--");
   display_string(1, "1. Play");
   display_string(2, "2. Leaderboard");
@@ -254,7 +255,7 @@ void menu() {
 
 // start screen
 void play() {
-  currentScreen = PLAY; // in screen
+  current_screen = PLAY; // in screen
   display_string(0, "1. Singleplayer");
   display_string(1, "2. Multiplayer");
   display_string(2, "3. Back");
@@ -265,7 +266,7 @@ void play() {
 
 // WIP... singleplayer screen
 void singleplayer() {
-  currentScreen = SINGLEPLAYER; // in singleplayer
+  current_screen = SINGLEPLAYER; // in singleplayer
 
   // TEMPORARY
   display_string(0, "Singleplayer");
@@ -278,7 +279,7 @@ void singleplayer() {
 
 // WIP... multiplayer screen
 void multiplayer() {
-  currentScreen = MULTIPLAYER; // in multiplayer
+  current_screen = MULTIPLAYER; // in multiplayer
 
   // TEMPORARY
   display_string(0, "Multiplayer");
@@ -291,7 +292,7 @@ void multiplayer() {
 
 // WIP... leaderboard screen
 void leaderboard() {
-  currentScreen = LEADERBOARD; // in leaderboard
+  current_screen = LEADERBOARD; // in leaderboard
 
   // TEMPORARY
   display_string(0, "Leaderboard");
@@ -312,10 +313,10 @@ void test() {
 // debug  screen, subject to change
 void debug() {
 
-  currentScreen = DEBUG;
+  current_screen = DEBUG;
 
   // test
-  updateCanvas();
+  update_canvas();
   //test(); 
 }
 
@@ -325,32 +326,32 @@ void debug() {
   IO
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
-const int delayvalue = 2; // how much to delay
+const int delay_value = 2; // how much to delay
 
 
 // BTN1
 void button1() {
 
   // if enough delay has passed
-  if ((totaltimeout-optionsdelay) > delayvalue) {
+  if ((total_timeout - option_delay) > delay_value) {
 
     // menu
-    if (currentScreen == MENU) {
-      currentScreen = PLAY;
+    if (current_screen == MENU) {
+      current_screen = PLAY;
     }
 
     // play
-    else if (currentScreen == PLAY) {
-      currentScreen = SINGLEPLAYER;
+    else if (current_screen == PLAY) {
+      current_screen = SINGLEPLAYER;
     }
 
-    optionsdelay = totaltimeout; // reset optionsdelay to present totaltimeout
+    option_delay = total_timeout; // reset optionsdelay to present totaltimeout
   } 
 
   // debug
-  if (currentScreen == DEBUG) {
+  if (current_screen == DEBUG) {
     paddle2_y--;
-    updateCanvas();
+    update_canvas();
   }
 }
 
@@ -359,25 +360,25 @@ void button1() {
 void button2() {
 
   // if enough delay has passed
-  if (totaltimeout-optionsdelay > delayvalue) {
+  if (total_timeout - option_delay > delay_value) {
 
     // menu
-    if (currentScreen == MENU) {
-      currentScreen = LEADERBOARD;
+    if (current_screen == MENU) {
+      current_screen = LEADERBOARD;
     }
 
     // play
-    else if (currentScreen == PLAY) {
-      currentScreen = MULTIPLAYER;
+    else if (current_screen == PLAY) {
+      current_screen = MULTIPLAYER;
     }
 
-    optionsdelay = totaltimeout; // reset optionsdelay to present totaltimeout
+    option_delay = total_timeout; // reset optionsdelay to present totaltimeout
   }
 
   // debug
-  if (currentScreen == DEBUG) {
+  if (current_screen == DEBUG) {
     paddle2_y++;
-    updateCanvas();
+    update_canvas();
   }
 }
 
@@ -386,29 +387,29 @@ void button2() {
 void button3() {
 
   // if enough delay has passed
-  if (totaltimeout-optionsdelay > delayvalue) {
+  if (total_timeout - option_delay > delay_value) {
 
     // menu, go to debug
-    if (currentScreen == MENU) { 
-      currentScreen = DEBUG;
+    if (current_screen == MENU) { 
+      current_screen = DEBUG;
     }
 
     // start or leaderboard, go back to menu
-    else if (currentScreen == PLAY || currentScreen == LEADERBOARD) {
-      currentScreen = MENU;
+    else if (current_screen == PLAY || current_screen == LEADERBOARD) {
+      current_screen = MENU;
     }
 
     // TEMPORARY... singleplayer or multiplayer, go back to play
-    else if (currentScreen == SINGLEPLAYER || currentScreen == MULTIPLAYER) {
-      currentScreen = PLAY;
+    else if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) {
+      current_screen = PLAY;
     }
-    optionsdelay = totaltimeout; // reset optionsdelay to present totaltimeout
+    option_delay = total_timeout; // reset optionsdelay to present totaltimeout
   }
 
   // debug
-  if (currentScreen == DEBUG) {
+  if (current_screen == DEBUG) {
     paddle1_y--;
-    updateCanvas();
+    update_canvas();
   }
 }
 
@@ -417,9 +418,9 @@ void button3() {
 void button4() {
 
   // debug
-  if (currentScreen == DEBUG) { // moves ball in -y if in debug 
+  if (current_screen == DEBUG) { // moves ball in -y if in debug 
     paddle1_y++;
-    updateCanvas();
+    update_canvas();
   }
 }
 
@@ -428,27 +429,27 @@ void button4() {
 void switch1() {
 
   // debug
-  if (currentScreen == DEBUG) // goes to menu if in debug
-    currentScreen = MENU;
+  if (current_screen == DEBUG) // goes to menu if in debug
+    current_screen = MENU;
 }
 
 
-char oldScreen; // used to determine if user has switches screen
+char old_screen; // used to determine if user has switches screen
 
 // checks states and starts correct one
 void checkstate() {
   
   // won't update screen state if new state is same as old state
-  if (oldScreen != currentScreen) {
-    oldScreen = currentScreen;
+  if (old_screen != current_screen) {
+    old_screen = current_screen;
     
     // clears display if not in debug 
-    if (currentScreen != DEBUG) {
+    if (current_screen != DEBUG) {
       clear_display();
     }
 
     // states
-    switch(currentScreen)
+    switch(current_screen)
     {
       case MENU:
         menu();
