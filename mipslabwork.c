@@ -34,7 +34,9 @@
 #define SCREEN_WIDTH_FLOAT 127
 #define SCREEN_HEIGHT_FLOAT 31
 
-char current_screen; // init current screen variable
+// init current screen variable
+char current_screen; 
+int option_delay = 0; // delay for switching between options so same button isn't pressed immediately
 
 
 
@@ -44,6 +46,8 @@ char current_screen; // init current screen variable
 
 int total_timeout = 0; // global timer
 int timeoutcount = 0; // used to keep track of number of time loops
+void update_ball_pos_on_velocity();
+void update_canvas();
 
 /* Interrupt Service Routine */
 void user_isr( void )
@@ -53,9 +57,8 @@ void user_isr( void )
     TMR2 = 0; // reset timer for timer2
     total_timeout++;
 
-    // updates ball if in debug
+    update_ball_pos_on_velocity();
     if (current_screen == DEBUG) { 
-      update_ball_pos_on_velocity(); 
       update_canvas();
     }
 
@@ -156,10 +159,9 @@ float get_between(float input, int start, int end){
 int floor(float input) {
   return (int) input;
 }
-
 // Same as math ceil, but doesnt round up above the max. E.g 6.0 => 6.0, 6.1 => 7.0, 
 int ceil_custom(float input, float max) {
-  if (max <= input + 1) return floor(input);
+  if (max >= input + 1) return floor(input);
   return (int) (input + 1);
 }
 
@@ -173,6 +175,14 @@ float ball_y_velocity = 1;
 float ball_x = SCREEN_WIDTH_FLOAT / 2; // 0 <= x <= 127
 float ball_y = SCREEN_HEIGHT_FLOAT / 2; // 0 <= y <= 31
 
+const int paddle_x = 7;
+// This should always be an odd number, otherwise set_new_velocity_on_paddle_collision will fail.
+const int paddle_height = 9;
+int paddle_middle_height = 4; //(int) ((paddle_height-1) / 2); // 9 => 4
+
+// paddle values, 7 pixles 
+float paddle1_y = 15.5f;
+float paddle2_y = 15.5f;
 
 // Inverses the velocity on edge bounces.
 void set_new_velocity_on_edge() {
@@ -184,13 +194,28 @@ void set_new_velocity_on_edge() {
   }
 }
 
-
 // Might need shorter name but this is good enough for now.
 void update_ball_pos_on_velocity() {
   ball_x += ball_x_velocity;
   ball_y += ball_y_velocity;
 }
 
+void set_new_velocity_on_paddle_collision() {
+  // If ball on right side!
+  if (ball_x > (SCREEN_WIDTH_FLOAT / 2) &&
+    // If ball is between the paddle and end, if ball y is within paddle height
+    ball_x >= (SCREEN_WIDTH_FLOAT - paddle_x) && ball_y < (paddle2_y + paddle_middle_height + 0.5) && ball_y > (paddle2_y - paddle_middle_height - 0.5)
+  ) {
+    ball_x_velocity = -ball_x_velocity;
+
+  // If ball on left side!
+  } else if (ball_x < (SCREEN_WIDTH_FLOAT / 2) &&
+    // If ball is between the paddle and end, if ball y is within paddle height
+    ball_x <= paddle_x && ball_y < (paddle1_y + paddle_middle_height + 0.5) && ball_y > (paddle1_y - paddle_middle_height - 0.5)
+  ){
+    ball_x_velocity = -ball_x_velocity;
+  }
+}
 
 // creates the ball and displays it based on it's position
 void display_ball() {
@@ -198,8 +223,8 @@ void display_ball() {
   //update_ball_pos_on_velocity();
   set_new_velocity_on_edge();  // Sets the new velocity, important that it's called before get_between.
   // Makes sure the ball is within the screen.
-  ball_x = get_between(ball_x, 0, SCREEN_WIDTH_FLOAT);
-  ball_y = get_between(ball_y, 0, SCREEN_HEIGHT_FLOAT);
+  ball_x = get_between(ball_x, SCREEN_WIDTH_FLOAT, 0);
+  ball_y = get_between(ball_y, SCREEN_WIDTH_FLOAT, 0);
 
   // clear_display(); // reset screen, //TODO PLACE SOMEWHERE ELSE
 
@@ -214,12 +239,6 @@ void display_ball() {
   // display_image(display); //TODO PLACE SOMEWHERE ELSE
 }
 
-
-// paddle values, 7 pixles 
-const float paddle_x = 7;
-float paddle1_y = 15.5f;
-float paddle2_y = 15.5f;
-
 // handles both paddles coordinates and velocity
 display_paddle() {
   
@@ -227,27 +246,19 @@ display_paddle() {
   paddle1_y = get_between(paddle1_y, (paddle_x+1)/2, 31-(paddle_x+1)/2); //(paddle_x+1)/2 for it's with from the middle including bit
   paddle2_y = get_between(paddle2_y, (paddle_x+1)/2, 31-(paddle_x+1)/2);
 
-  // padle1
-  set_pixel(paddle_x-1, paddle1_y+4);
-  set_pixel(paddle_x, paddle1_y+3);
-  set_pixel(paddle_x, paddle1_y+2);
-  set_pixel(paddle_x, paddle1_y+1);
-  set_pixel(paddle_x, paddle1_y+0);
-  set_pixel(paddle_x, paddle1_y-1);
-  set_pixel(paddle_x, paddle1_y-2);
-  set_pixel(paddle_x, paddle1_y-3);
-  set_pixel(paddle_x-1, paddle1_y-4);
+  // paddle1
+  int i = -paddle_middle_height;
+  for (i; i < paddle_middle_height+1; i++){
+    int new_paddle_x = paddle_x - (i == -paddle_middle_height || i == paddle_middle_height);
+    set_pixel(new_paddle_x, paddle1_y+i);
+  }
 
-  // padle2
-  set_pixel(127 - paddle_x+1, paddle2_y+4);
-  set_pixel(127 - paddle_x, paddle2_y+3);
-  set_pixel(127 - paddle_x, paddle2_y+2);
-  set_pixel(127 - paddle_x, paddle2_y+1);
-  set_pixel(127 - paddle_x, paddle2_y+0);
-  set_pixel(127 - paddle_x, paddle2_y-1);
-  set_pixel(127 - paddle_x, paddle2_y-2);
-  set_pixel(127 - paddle_x, paddle2_y-3);
-  set_pixel(127 - paddle_x+1, paddle2_y-4);
+  // paddle2
+  i = -paddle_middle_height;
+  for (i; i < paddle_middle_height+1; i++){
+    int new_paddle_x = SCREEN_WIDTH_FLOAT - paddle_x + (i == -paddle_middle_height || i == paddle_middle_height);
+    set_pixel(new_paddle_x, paddle2_y+i);
+  }
 }
 
 
@@ -349,16 +360,14 @@ void debug() {
   IO
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
-int press_delay = 0; // delay for switching between options so same button isn't pressed immediately
-const int delay_value_game_inputs = 1; // how much to delay
-const int delay_value_menu_inputs = 3;
+const int delay_value = 2; // how much to delay
 
 
 // BTN1
 void button1() {
 
-  // if enough delay has passed for menu switching
-  if((total_timeout - press_delay) > delay_value_menu_inputs) {
+  // if enough delay has passed
+  if ((total_timeout - option_delay) > delay_value) {
 
     // menu
     if (current_screen == MENU) {
@@ -369,26 +378,23 @@ void button1() {
     else if (current_screen == PLAY) {
       current_screen = SINGLEPLAYER;
     }
-  }
 
-  // if enough delay has passed for gameplay
-  if ((total_timeout - press_delay) > delay_value_game_inputs) {
-
-    // debug
-    if (current_screen == DEBUG) {
-      paddle2_y--;
-    }
-
-    press_delay = total_timeout; // reset optionsdelay to present totaltimeout
+    option_delay = total_timeout; // reset optionsdelay to present totaltimeout
   } 
+
+  // debug
+  if (current_screen == DEBUG) {
+    paddle2_y--;
+  }
 }
 
 
 // BTN2
 void button2() {
 
-  // if enough delay has passed for menu switching
-  if((total_timeout - press_delay) > delay_value_menu_inputs) {
+  // if enough delay has passed
+  if (total_timeout - option_delay > delay_value) {
+
     // menu
     if (current_screen == MENU) {
       current_screen = LEADERBOARD;
@@ -398,17 +404,13 @@ void button2() {
     else if (current_screen == PLAY) {
       current_screen = MULTIPLAYER;
     }
+
+    option_delay = total_timeout; // reset optionsdelay to present totaltimeout
   }
 
-  // if enough delay has passed for gameplay input
-  if (total_timeout - press_delay > delay_value_game_inputs) {
-
-    // debug
-    if (current_screen == DEBUG) {
-      paddle2_y++;
-    }
-
-    press_delay = total_timeout; // reset optionsdelay to present totaltimeout
+  // debug
+  if (current_screen == DEBUG) {
+    paddle2_y++;
   }
 }
 
@@ -416,8 +418,9 @@ void button2() {
 // BTN3
 void button3() {
 
-  // if enough delay has passed for menu switching
-  if((total_timeout - press_delay) > delay_value_menu_inputs) {
+  // if enough delay has passed
+  if (total_timeout - option_delay > delay_value) {
+
     // menu, go to debug
     if (current_screen == MENU) { 
       current_screen = DEBUG;
@@ -427,21 +430,17 @@ void button3() {
     else if (current_screen == PLAY || current_screen == LEADERBOARD) {
       current_screen = MENU;
     }
-  }
 
-  // TEMPORARY... singleplayer or multiplayer, go back to play
-  else if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) {
-    current_screen = PLAY;
-  }
-
-  // if enough delay has passed for gameplay inputs
-  if (total_timeout - press_delay > delay_value_game_inputs) {
-    // debug
-    if (current_screen == DEBUG) {
-      paddle1_y--;
+    // TEMPORARY... singleplayer or multiplayer, go back to play
+    else if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) {
+      current_screen = PLAY;
     }
-    
-    press_delay = total_timeout; // reset optionsdelay to present totaltimeout
+    option_delay = total_timeout; // reset optionsdelay to present totaltimeout
+  }
+
+  // debug
+  if (current_screen == DEBUG) {
+    paddle1_y--;
   }
 }
 
@@ -449,15 +448,9 @@ void button3() {
 // BTN4
 void button4() {
 
-  // if enough delay has passed
-  if (total_timeout - press_delay > delay_value_game_inputs) {
-
-    // debug
-    if (current_screen == DEBUG) {
-      paddle1_y++;
-    }
-    
-    press_delay = total_timeout; // reset optionsdelay to present totaltimeout
+  // debug
+  if (current_screen == DEBUG) { // moves ball in -y if in debug 
+    paddle1_y++;
   }
 }
 
@@ -550,7 +543,7 @@ void labinit( void )
   PORTE = 0; // lights off for now
 
   // T2
-  T2CON = 0b1000000001100000; // timer on with PRE 256
+  T2CON = 0b1000000001110000; // timer on with PRE 256
   PR2 = 31250;  // (80M*10^6)/256/10
 
   // timing interrupts
