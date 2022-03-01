@@ -45,7 +45,7 @@ int is_singleplayer = 0; // if gamemode is in singleplayer or multilpayer
 char current_screen; // init current screen variable
 char old_screen; // used to determine if user has switched screen
 
-char int_to_char(int i) { return '0' + i; }
+char int_to_char(int i) { return '0' + i; } // converts an int to it's corresponding char 
 
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,6 +69,11 @@ void user_isr( void )
     if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) { 
       update_ball_pos_on_velocity(); 
       update_canvas();
+
+      // updates AI if in singleplayer mode
+      if (is_singleplayer) {
+        ai_update();
+      }
     }
 
     // reset timeout
@@ -196,6 +201,7 @@ const float paddle_x = 7;
 const int paddle_height = 9;
 int paddle_middle_height = 4; //(int) ((paddle_height-1) / 2); // 9 => 4
 
+// paddle 
 float paddle1_y = 15.5f;
 float paddle2_y = 15.5f;
 
@@ -298,6 +304,36 @@ display_paddle() {
 }
 
 
+// updates AI inputs depending on where ball is, increase it's height 
+void ai_update() {
+
+  // only moves defensively when ball is close enough
+  if (SCREEN_WIDTH_FLOAT - paddle_x - ball_x < 40) {
+    // if ball is lower than paddle
+    if(ball_y > paddle2_y) {
+      paddle2_y++;
+    }
+
+    // if ball is heigher than paddle, lower it's height
+    else if (ball_y < paddle2_y) {
+      paddle2_y--; 
+    }
+  }
+
+  // if not centered 
+  else if (paddle2_y != 15) {
+    if (paddle2_y > 15.5) {
+      paddle2_y--;
+    }
+    else if (paddle2_y < 15.5) {
+      paddle2_y++;
+    }
+  }
+    
+
+}
+
+
 // updates the screen when moving pixles
 void update_canvas() {
   clear_display();
@@ -393,13 +429,17 @@ void score() {
     }
     p2p[5] = int_to_char(player2_points);
     
-
+    // scoreboard
     display_string(0, p1p);
     display_string(1, p2p);
     display_string(2, "");
     display_string(3, "3. Continue");
     display_update();
   }
+
+  // reset paddle position
+  paddle1_y = 15.5f;
+  paddle2_y = 15.5f;
 }
 
 
