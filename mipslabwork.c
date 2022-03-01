@@ -29,10 +29,17 @@
 #define MULTIPLAYER 'w'
 #define LEADERBOARD 'l'
 #define DEBUG 'd'
+#define GAMEROUND 'd' // should be 'g' in future
+#define WINNER 'i'
+#define SCORE 's'
 
 // screen size definitions
 #define SCREEN_WIDTH_FLOAT 127
 #define SCREEN_HEIGHT_FLOAT 31
+
+const int rounds_to_win = 5; // rounds to win to win the whole game
+int player1_points = 0; // keeps track of total round wins for player1
+int player2_points = 0; // keeps track of total round wins for player2
 
 char current_screen; // init current screen variable
 
@@ -178,6 +185,16 @@ float ball_y = SCREEN_HEIGHT_FLOAT / 2; // 0 <= y <= 31
 void set_new_velocity_on_edge() {
   if (ball_x > SCREEN_WIDTH_FLOAT || ball_x < 0) {
     ball_x_velocity = -ball_x_velocity;
+
+    // adds points to a player if they score
+    if (ball_x > SCREEN_WIDTH_FLOAT) {
+      player1_points++;
+    }
+    else if (ball_x < 0) {
+      player2_points++;
+    }
+
+    current_screen = SCORE;
   }
   if (ball_y > SCREEN_HEIGHT_FLOAT || ball_y < 0){
     ball_y_velocity = -ball_y_velocity;
@@ -215,7 +232,7 @@ void display_ball() {
 }
 
 
-// paddle values, 7 pixles 
+// paddle values, 7 pixles from each side
 const float paddle_x = 7;
 float paddle1_y = 15.5f;
 float paddle2_y = 15.5f;
@@ -228,7 +245,7 @@ display_paddle() {
   paddle2_y = get_between(paddle2_y, (paddle_x+1)/2, 31-(paddle_x+1)/2);
 
   // padle1
-  set_pixel(paddle_x-1, paddle1_y+4);
+  set_pixel(paddle_x-1, paddle1_y+4); 
   set_pixel(paddle_x, paddle1_y+3);
   set_pixel(paddle_x, paddle1_y+2);
   set_pixel(paddle_x, paddle1_y+1);
@@ -326,6 +343,64 @@ void leaderboard() {
 }
 
 
+// handles a round of pong between player1 and player2
+void game_round() {
+  current_screen = GAMEROUND;
+
+  
+
+  // checks continuarily if a score has been made
+
+  else {
+    update_canvas();
+  }
+}
+
+
+// shows which player won after a game
+void winning_screen () {
+  current_screen = WINNER;
+  
+  // player1 won game
+  if (player1_points >= rounds_to_win) {
+    display_string(0, "Player1 Win");
+  }
+
+  // player2 won game
+  if (player2_points >= rounds_to_win) {
+    display_string(0, "Player2 Win");
+  }
+  
+  // go back
+  display_string(1, "3. Back");
+  display_string(2, "");
+  display_string(3, "");
+  display_update();
+
+  // reset points
+  player1_points = 0;
+  player2_points = 0;
+}
+
+
+// show current score in between points
+void score() {
+  current_screen = SCORE;
+  
+  // if a player has won
+  if (player1_points >= rounds_to_win || player2_points >= rounds_to_win) {
+    current_screen = WINNER;
+  }
+  else {
+    display_string(0, "P1 = " + player1_points);
+    display_string(1, "P2 = " + player2_points);
+    display_string(2, "3. Continue");
+    display_string(3, "");
+    display_update();
+  }
+}
+
+
 // testing function for debug, subject to change
 void test() {
   int i = 0;
@@ -335,12 +410,11 @@ void test() {
 
 // debug  screen, subject to change
 void debug() {
-
-  current_screen = DEBUG;
+  //current_screen = DEBUG;
 
   // test
-  update_canvas();
-  //test(); 
+  current_screen = GAMEROUND;
+  //update_canvas(); 
 }
 
 
@@ -471,7 +545,7 @@ void switch1() {
 }
 
 
-char old_screen; // used to determine if user has switches screen
+char old_screen; // used to determine if user has switched screen
 
 // checks states and starts correct one
 void checkstate() {
@@ -481,11 +555,11 @@ void checkstate() {
     old_screen = current_screen;
     
     // clears display if not in debug 
-    if (current_screen != DEBUG) {
+    if (current_screen != DEBUG || current_screen != GAMEROUND) {
       clear_display();
     }
 
-    // states
+    // screen states
     switch(current_screen)
     {
       case MENU:
@@ -502,6 +576,21 @@ void checkstate() {
 
       case MULTIPLAYER:
         multiplayer();
+        break;
+
+      // only debug for now, uses same variable temporarily
+      /*
+      case GAMEROUND:
+        game_round();
+        break;
+      */
+
+      case WINNER:
+        winning_screen();
+        break;
+
+      case SCORE:
+        score();
         break;
 
       case LEADERBOARD:
