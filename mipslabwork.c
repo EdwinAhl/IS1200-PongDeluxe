@@ -228,7 +228,7 @@ void set_new_velocity_on_edge() {
   if (ball_x > SCREEN_WIDTH_FLOAT || ball_x < 0) {
     ball_x_velocity = -ball_x_velocity;
 
-    // adds points to a player if they score
+    // adds points to a player if they score (ball reaches the end of the screen)
     if (ball_x > SCREEN_WIDTH_FLOAT) {
       player1_points++;
     }
@@ -238,6 +238,7 @@ void set_new_velocity_on_edge() {
 
     current_screen = SCORE;
   }
+  // If the ball is outside the screen y-wise it'll invert upwards velocity, e.g bounce.
   if (ball_y > SCREEN_HEIGHT_FLOAT || ball_y < 0){
     ball_y_velocity = -ball_y_velocity;
   }
