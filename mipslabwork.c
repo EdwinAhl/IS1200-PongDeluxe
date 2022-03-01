@@ -34,9 +34,7 @@
 #define SCREEN_WIDTH_FLOAT 127
 #define SCREEN_HEIGHT_FLOAT 31
 
-// init current screen variable
-char current_screen; 
-int option_delay = 0; // delay for switching between options so same button isn't pressed immediately
+char current_screen; // init current screen variable
 
 
 
@@ -347,14 +345,16 @@ void debug() {
   IO
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
-const int delay_value = 2; // how much to delay
+int press_delay = 0; // delay for switching between options so same button isn't pressed immediately
+const int delay_value_game_inputs = 1; // how much to delay
+const int delay_value_menu_inputs = 3;
 
 
 // BTN1
 void button1() {
 
-  // if enough delay has passed
-  if ((total_timeout - option_delay) > delay_value) {
+  // if enough delay has passed for menu switching
+  if((total_timeout - press_delay) > delay_value_menu_inputs) {
 
     // menu
     if (current_screen == MENU) {
@@ -365,23 +365,26 @@ void button1() {
     else if (current_screen == PLAY) {
       current_screen = SINGLEPLAYER;
     }
-
-    option_delay = total_timeout; // reset optionsdelay to present totaltimeout
-  } 
-
-  // debug
-  if (current_screen == DEBUG) {
-    paddle2_y--;
   }
+
+  // if enough delay has passed for gameplay
+  if ((total_timeout - press_delay) > delay_value_game_inputs) {
+
+    // debug
+    if (current_screen == DEBUG) {
+      paddle2_y--;
+    }
+
+    press_delay = total_timeout; // reset optionsdelay to present totaltimeout
+  } 
 }
 
 
 // BTN2
 void button2() {
 
-  // if enough delay has passed
-  if (total_timeout - option_delay > delay_value) {
-
+  // if enough delay has passed for menu switching
+  if((total_timeout - press_delay) > delay_value_menu_inputs) {
     // menu
     if (current_screen == MENU) {
       current_screen = LEADERBOARD;
@@ -391,13 +394,17 @@ void button2() {
     else if (current_screen == PLAY) {
       current_screen = MULTIPLAYER;
     }
-
-    option_delay = total_timeout; // reset optionsdelay to present totaltimeout
   }
 
-  // debug
-  if (current_screen == DEBUG) {
-    paddle2_y++;
+  // if enough delay has passed for gameplay input
+  if (total_timeout - press_delay > delay_value_game_inputs) {
+
+    // debug
+    if (current_screen == DEBUG) {
+      paddle2_y++;
+    }
+
+    press_delay = total_timeout; // reset optionsdelay to present totaltimeout
   }
 }
 
@@ -405,9 +412,8 @@ void button2() {
 // BTN3
 void button3() {
 
-  // if enough delay has passed
-  if (total_timeout - option_delay > delay_value) {
-
+  // if enough delay has passed for menu switching
+  if((total_timeout - press_delay) > delay_value_menu_inputs) {
     // menu, go to debug
     if (current_screen == MENU) { 
       current_screen = DEBUG;
@@ -417,17 +423,21 @@ void button3() {
     else if (current_screen == PLAY || current_screen == LEADERBOARD) {
       current_screen = MENU;
     }
-
-    // TEMPORARY... singleplayer or multiplayer, go back to play
-    else if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) {
-      current_screen = PLAY;
-    }
-    option_delay = total_timeout; // reset optionsdelay to present totaltimeout
   }
 
-  // debug
-  if (current_screen == DEBUG) {
-    paddle1_y--;
+  // TEMPORARY... singleplayer or multiplayer, go back to play
+  else if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) {
+    current_screen = PLAY;
+  }
+
+  // if enough delay has passed for gameplay inputs
+  if (total_timeout - press_delay > delay_value_game_inputs) {
+    // debug
+    if (current_screen == DEBUG) {
+      paddle1_y--;
+    }
+    
+    press_delay = total_timeout; // reset optionsdelay to present totaltimeout
   }
 }
 
@@ -435,9 +445,15 @@ void button3() {
 // BTN4
 void button4() {
 
-  // debug
-  if (current_screen == DEBUG) { // moves ball in -y if in debug 
-    paddle1_y++;
+  // if enough delay has passed
+  if (total_timeout - press_delay > delay_value_game_inputs) {
+    
+    // debug
+    if (current_screen == DEBUG) {
+      paddle1_y++;
+    }
+    
+    press_delay = total_timeout; // reset optionsdelay to present totaltimeout
   }
 }
 
@@ -530,7 +546,7 @@ void labinit( void )
   PORTE = 0; // lights off for now
 
   // T2
-  T2CON = 0b1000000001110000; // timer on with PRE 256
+  T2CON = 0b1000000001100000; // timer on with PRE 256
   PR2 = 31250;  // (80M*10^6)/256/10
 
   // timing interrupts
