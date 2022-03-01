@@ -27,6 +27,7 @@
 #define MENU 'm'
 #define PLAY 'p'
 #define SINGLEPLAYER 'v'
+#define DIFFICULTY 'd'
 #define MULTIPLAYER 'w'
 #define LEADERBOARD 'l'
 #define SCORE 's'
@@ -41,6 +42,7 @@ const int rounds_to_win = 3; // rounds to win to win the whole game
 int player1_points = 0; // keeps track of total round wins for player1
 int player2_points = 0; // keeps track of total round wins for player2
 int is_singleplayer = 0; // if gamemode is in singleplayer or multilpayer
+int ai_difficulty = 0;
 
 char current_screen; // init current screen variable
 char old_screen; // used to determine if user has switched screen
@@ -369,18 +371,22 @@ void play() {
   display_update();
 }
 
+// chose difficulty
+void difficulty_options() {
+  current_screen = DIFFICULTY; // in screen
+  display_string(0, "1. Easy");
+  display_string(1, "2. Medium");
+  display_string(2, "3. Hard");
+  display_string(3, "4. Back");
+  display_update();
+}
+
 
 // WIP... singleplayer screen
 void singleplayer() {
   current_screen = SINGLEPLAYER; // in singleplayer
   is_singleplayer = 1;
-
-  // TEMPORARY
-  display_string(0, "Singleplayer");
-  display_string(1, "3. Back");
-  display_string(2, "");
-  display_string(3, "");
-  display_update();
+  center_ball(); // ??
 }
 
 
@@ -388,9 +394,7 @@ void singleplayer() {
 void multiplayer() {
   current_screen = MULTIPLAYER; // in multiplayer
   is_singleplayer = 0;
-
-  center_ball();
-  update_canvas();
+  center_ball(); // ??
 }
 
 
@@ -437,7 +441,8 @@ void score() {
     display_update();
   }
 
-  // reset paddle position
+  // reset paddle and position
+  center_ball();
   paddle1_y = 15.5f;
   paddle2_y = 15.5f;
 }
