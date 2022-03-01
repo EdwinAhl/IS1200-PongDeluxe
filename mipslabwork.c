@@ -230,30 +230,19 @@ int paddle_middle_height = 4; //(int) ((paddle_height-1) / 2); // 9 => 4
 float paddle1_y = 15.5f;
 float paddle2_y = 15.5f;
 
-// Fast inverse square root, from Quake III Arena
-// Shamelessly stolen to get a sqrt() function on mips
-float Q_rsqrt( float number )
-{
-	long i;
-	float x2, y;
-	const float threehalfs = 1.5F;
-
-	x2 = number * 0.5F;
-	y  = number;
-	i  = * ( long * ) &y;                       // evil floating point bit level hacking
-	i  = 0x5f3759df - ( i >> 1 );               // what the fuck? 
-	y  = * ( float * ) &i;
-	y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
-  y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
-
-	return y;
+// Using the Babylonian method 
+// https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method
+float sqrt(float number){
+  float current_number = number / 2; // Start estimate close to the real root
+  const int iterations = 10; // loop 10 times
+  int i;
+  for (i = 0; i < iterations; i++){
+	  current_number = (current_number + number / current_number) / 2;
+  }
+  return current_number;
 }
 
-float sqrt( float number ){
-  return 1/Q_rsqrt(number);
-}
-
-float abs( float number) {
+float abs(float number) {
   return number < 0 ? -number : number;
 }
 
@@ -264,43 +253,56 @@ float abs( float number) {
 // Half of paddle_height = 4.5
 // f(x) = sqrt(4.5² - 4.5²x²)
 // f'(x) = ...
-float calculate_derivative(float intercept_x, int is_ball_upper){
+float calculate_derivative(float intercept_x){
   // 4.5
   float half_paddle = paddle_middle_height + 0.5;
   // 4.5²
   float half_paddle_exp = half_paddle * half_paddle;
 
-  float negative_derivative = (half_paddle_exp * intercept_x) / 
+  float derivative = (half_paddle_exp * intercept_x) / 
     sqrt(-half_paddle_exp * intercept_x * intercept_x + half_paddle_exp);
 
-  return is_ball_upper ? -negative_derivative : negative_derivative;
+  return derivative;
 }
 
 // x² + px + q = 0
 // Solve for x
-float pq_formula(float p, float q){
-  return -(p / 2) + sqrt(((p*p) / 4) - q);
+// lower will give the smaller result if true
+float pq_formula(float p, float q, int lower){
+  float diff = sqrt(((p*p) / 4) - q);
+  float realdiff = lower ? -diff : diff;
+  return -(p / 2) + realdiff;
 }
 
 // ax² + bx + c = 0
 // Solve for x
-float abc_formula(float a, float b, float c){
+float abc_formula(float a, float b, float c, int lower){
   float p = b/a;
   float q = c/a;
-  return pq_formula(p, q);
+  return pq_formula(p, q, lower);
 }
+
+/*
+float calculate_elipsis(float x){
+  // 4.5
+  float half_paddle = paddle_middle_height + 0.5;
+  // 4.5²
+  float half_paddle_exp = half_paddle * half_paddle;
+
+  return sqrt(half_paddle_exp - half_paddle_exp * x * x)
+}
+*/
 
 // This function calculates the relative x-coordinate the ball hits the epipsis at.
 // Used to calculate the derivative.
 
-// f(x) = slope * x + distance_from_paddle_y;
+// sum = pos_y - slope * pos_x
+// f(x) = slope * x + sum
 // Solve for x
 float calculate_intercept_x(float slope, int is_ball_left){
-  float abs_slope = abs(slope);
-
   float paddle_y = is_ball_left ? paddle2_y : paddle1_y;
-  float distance_from_paddle_y = abs(paddle_y - ball_y);
-  float distance_from_paddle_x = is_ball_left ? abs(SCREEN_WIDTH_FLOAT - paddle_x - ball_x) : abs(ball_x - paddle_x);
+  float distance_from_paddle_y = -(paddle_y - ball_y);
+  float distance_from_paddle_x = is_ball_left ? -(SCREEN_WIDTH_FLOAT - paddle_x - ball_x) : ball_x - paddle_x;
   
   // Negative is below:
 
@@ -308,10 +310,26 @@ float calculate_intercept_x(float slope, int is_ball_left){
   float half_paddle = paddle_middle_height + 0.5;
   // 4.5²
   float half_paddle_exp = half_paddle * half_paddle;
+  float sum = distance_from_paddle_y - slope * distance_from_paddle_x;
 
-  // Solve sqrt(4.5²-4.5²x²) = slope * x + distance_from_paddle_y
-  float positive_intercept = abc_formula( -(half_paddle_exp - abs_slope * abs_slope), 2*abs_slope, distance_from_paddle_y*distance_from_paddle_y - half_paddle_exp);
-  return is_ball_left ? -positive_intercept : positive_intercept;
+  // Solve sqrt(4.5²-4.5²x²) = slope * x + sum
+  float intercept_x = 
+  abc_formula(
+    abs(half_paddle_exp + slope * slope),
+    2 * slope * sum,
+    sum * sum - half_paddle_exp,
+    is_ball_left
+  );
+
+/*
+  printf("distance_from_paddle_y: %f\n", distance_from_paddle_y);
+  printf("distance_from_paddle_x: %f\n", distance_from_paddle_x);
+  printf("sum: %f\n", sum);
+  printf("is_ball_left: %d\n", is_ball_left);
+  printf("intercept_x: %f\n", intercept_x);
+*/
+
+  return intercept_x;
 }
 
 // This sets the new mirrored velocity based on 
@@ -322,28 +340,30 @@ void calculate_reflection_and_set_velocity(){
   // If ball is on the upper side of the paddle.
   int is_ball_upper = ball_y < SCREEN_HEIGHT_FLOAT / 2;
 
-  float slope = ball_y_velocity / ball_x_velocity;
+  float slope = -ball_y_velocity / ball_x_velocity;
   float intercept_x = calculate_intercept_x(slope, is_ball_left);
-  
-  // --- Calculate the mirror with the normal and an incoming vector ---
-  float normal_vector_x = calculate_derivative(intercept_x, is_ball_upper);
-  float normal_vector_y = 1;
 
-  float incoming_vector_x = -ball_x_velocity;
-  float incoming_vector_y = -ball_y_velocity;
+  // Positive above, negative below
+  int is_ball_upper_multiplier = is_ball_upper ? 1 : -1;
+  // Positive to the left, negative to the right
+  int is_ball_left_multiplier = is_ball_left ? 1 : -1;
+
+  // --- Calculate the mirror with the normal and an incoming vector ---
+  float normal_vector_x = calculate_derivative(intercept_x);
+  float normal_vector_y = -is_ball_upper_multiplier;
+
+  float reflection_vector_x = 1;
+  float reflection_vector_y = slope;
 
   // reflection = 𝟐𝒑𝒓𝒐𝒋_𝒗⃗⃗⃗(𝒖⃗⃗⃗) − 𝒖
   float base_reflection = 2 * 
     // U * V
-    (normal_vector_x * incoming_vector_x + normal_vector_y * incoming_vector_y ) /
+    (normal_vector_x * reflection_vector_x + normal_vector_y * reflection_vector_y) /
     // div ||v||²
     (normal_vector_x * normal_vector_x + normal_vector_y * normal_vector_y);
-  
-  ball_x_velocity = base_reflection * normal_vector_x - incoming_vector_x;
 
-  // Need to invert ball_y_velocity if the ball is coming from the right.
-  float base_ball_y_velocity = base_reflection * normal_vector_y - incoming_vector_y;
-  ball_y_velocity = is_ball_left ? base_ball_y_velocity : -base_ball_y_velocity;
+  ball_x_velocity = -is_ball_left_multiplier * (base_reflection * normal_vector_x - reflection_vector_x);
+  ball_y_velocity = is_ball_upper_multiplier * (base_reflection * normal_vector_y - reflection_vector_y);
 }
 
 void set_new_velocity_on_paddle_collision() {
