@@ -207,15 +207,23 @@ float paddle2_y = 15.5f;
 void set_new_velocity_on_paddle_collision() {
   // If ball on right side!
   if (ball_x > (SCREEN_WIDTH_FLOAT / 2) &&
-    // If ball is between the paddle and end, if ball y is within paddle height
-    ball_x >= (SCREEN_WIDTH_FLOAT - paddle_x) && ball_y < (paddle2_y + paddle_middle_height + 0.5) && ball_y > (paddle2_y - paddle_middle_height - 0.5)
+    // If ball is between the paddle and end
+    ball_x >= (SCREEN_WIDTH_FLOAT - paddle_x) && ball_x < (SCREEN_WIDTH_FLOAT - paddle_x + ball_x_velocity + 1) && 
+
+    // if ball y is within paddle height
+    ball_y < (paddle2_y + paddle_middle_height + 0.5) && 
+    ball_y > (paddle2_y - paddle_middle_height - 0.5)
   ) {
     ball_x_velocity = -ball_x_velocity;
 
   // If ball on left side!
   } else if (ball_x < (SCREEN_WIDTH_FLOAT / 2) &&
-    // If ball is between the paddle and end, if ball y is within paddle height
-    ball_x <= paddle_x && ball_y < (paddle1_y + paddle_middle_height + 0.5) && ball_y > (paddle1_y - paddle_middle_height - 0.5)
+    // If ball is between the paddle and start
+    ball_x <= paddle_x && ball_x > (paddle_x - ball_x_velocity - 1) && 
+    
+    // if ball y is within paddle height
+    ball_y < (paddle1_y + paddle_middle_height + 0.5) && 
+    ball_y > (paddle1_y - paddle_middle_height - 0.5)
   ){
     ball_x_velocity = -ball_x_velocity;
   }
