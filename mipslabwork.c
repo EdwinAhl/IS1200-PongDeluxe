@@ -58,8 +58,8 @@ void user_isr( void )
     // reset timeout
     if (timeoutcount++ == 10) {
       if (current_screen == DEBUG) {
-        update_ball_pos_on_velocity();
-        update_canvas();
+        // update_ball_pos_on_velocity();
+        // update_canvas();
       }
       timeoutcount = 0;
     }
@@ -152,11 +152,13 @@ float get_between(float input, int start, int end){
 }
 
 
-// math floor and ceiling 
+// math floor and ceiling
 int floor(float input) {
   return (int) input;
 }
-int ceil(float input) {
+// Same as math ceil, but doesnt round up above the max. E.g 6.0 => 6.0, 6.1 => 7.0, 
+int ceil_custom(float input, float max) {
+  if (max >= input + 1) return floor(input);
   return (int) (input + 1);
 }
 
@@ -195,17 +197,17 @@ void display_ball() {
   //update_ball_pos_on_velocity();
   set_new_velocity_on_edge();  // Sets the new velocity, important that it's called before get_between.
   // Makes sure the ball is within the screen.
-  ball_x = get_between(ball_x, 0, SCREEN_WIDTH_FLOAT);
-  ball_y = get_between(ball_y, 0, SCREEN_HEIGHT_FLOAT);
+  ball_x = get_between(ball_x, SCREEN_WIDTH_FLOAT, 0);
+  ball_y = get_between(ball_y, SCREEN_WIDTH_FLOAT, 0);
 
   // clear_display(); // reset screen, //TODO PLACE SOMEWHERE ELSE
 
   // Creates 4 pixels for the ball based on the center point.
   set_pixel(floor(ball_x), floor(ball_y));
-  set_pixel(floor(ball_x), ceil(ball_y));
+  set_pixel(floor(ball_x), ceil_custom(ball_y, SCREEN_HEIGHT_FLOAT));
 
-  set_pixel(ceil(ball_x), ceil(ball_y));
-  set_pixel(ceil(ball_x), floor(ball_y));
+  set_pixel(ceil_custom(ball_x, SCREEN_WIDTH_FLOAT), ceil_custom(ball_y, SCREEN_HEIGHT_FLOAT));
+  set_pixel(ceil_custom(ball_x, SCREEN_WIDTH_FLOAT), floor(ball_y));
 
   //last_display_ball = totaltimeout;
   // display_image(display); //TODO PLACE SOMEWHERE ELSE
