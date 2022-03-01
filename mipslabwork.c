@@ -31,7 +31,7 @@
 #define LEADERBOARD 'l'
 #define DEBUG 'd'
 #define GAMEROUND 'd' // should be 'g' in future
-#define WINNER 'i'
+#define RESULTS 'r'
 #define SCORE 's'
 
 // screen size definitions
@@ -44,14 +44,8 @@ int player2_points = 0; // keeps track of total round wins for player2
 
 char current_screen; // init current screen variable
 
-/* Helper function, local to this file.
-   Converts a number to hexadecimal ASCII digits. */
-static void num32asc( char * s, int n ) 
-{
-  int i;
-  for( i = 28; i >= 0; i -= 4 )
-    *s++ = "0123456789ABCDEF"[ (n >> i) & 15 ];
-}
+char int_to_char(int i) { return '0' + i; }
+
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////
   TIME
@@ -271,6 +265,7 @@ void display_ball() {
   // display_image(display); //TODO PLACE SOMEWHERE ELSE
 }
 
+
 // handles both paddles coordinates and velocity
 display_paddle() {
   
@@ -378,8 +373,8 @@ void game_round() {
 
 
 // shows which player won after a game
-void winning_screen () {
-  current_screen = WINNER;
+void results () {
+  current_screen = RESULTS;
   
   // player1 won game
   if (player1_points >= rounds_to_win) {
@@ -392,8 +387,8 @@ void winning_screen () {
   }
   
   // go back
-  display_string(1, "3. Back");
-  display_string(2, "");
+  display_string(1, "");
+  display_string(2, "3. Back");
   display_string(3, "");
   display_update();
 
@@ -409,18 +404,23 @@ void score() {
   
   // if a player has won
   if (player1_points >= rounds_to_win || player2_points >= rounds_to_win) {
-    current_screen = WINNER;
+    current_screen = RESULTS;
   }
   else {
-    char p1p[] = "P1 =  ";
-    num32asc(&p1p[5], player1_points);
-    char p2p[] = "P2 =  ";
-    num32asc(&p2p[5], player2_points);
+
+    // player1 points to char array
+    char p1p[] = "P1 =  "; 
+    p1p[5] = int_to_char(player1_points);
+
+    // player2 points to char array
+    char p2p[] = "P2 =  "; 
+    p2p[5] = int_to_char(player2_points);
+    
 
     display_string(0, p1p);
     display_string(1, p2p);
-    display_string(2, "3. Continue");
-    display_string(3, "");
+    display_string(2, "");
+    display_string(3, "3. Continue");
     display_update();
   }
 }
@@ -532,8 +532,8 @@ void button3() {
       current_screen = GAMEROUND;
     }
 
-    // winnner
-    else if (current_screen == WINNER) {
+    // results
+    else if (current_screen == RESULTS) {
       current_screen = PLAY;
     }
   }
@@ -614,14 +614,14 @@ void checkstate() {
         break;
 
       // only debug for now, uses same variable temporarily
-      /*
+      
       case GAMEROUND:
         game_round();
         break;
-      */
+      
 
-      case WINNER:
-        winning_screen();
+      case RESULTS:
+        results();
         break;
 
       case SCORE:
@@ -632,9 +632,11 @@ void checkstate() {
         leaderboard();
         break;
       
+      /*
       case DEBUG:
         debug();
         break;
+      */
     }
   }
 }
