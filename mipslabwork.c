@@ -55,12 +55,13 @@ void user_isr( void )
     TMR2 = 0; // reset timer for timer2
     total_timeout++;
 
+    update_ball_pos_on_velocity();
+    if (current_screen == DEBUG) { 
+      update_canvas();
+    }
+
     // reset timeout
     if (timeoutcount++ == 10) {
-      if (current_screen == DEBUG) {
-        // update_ball_pos_on_velocity();
-        // update_canvas();
-      }
       timeoutcount = 0;
     }
   }
@@ -373,7 +374,6 @@ void button1() {
   // debug
   if (current_screen == DEBUG) {
     paddle2_y--;
-    update_canvas();
   }
 }
 
@@ -400,7 +400,6 @@ void button2() {
   // debug
   if (current_screen == DEBUG) {
     paddle2_y++;
-    update_canvas();
   }
 }
 
@@ -431,7 +430,6 @@ void button3() {
   // debug
   if (current_screen == DEBUG) {
     paddle1_y--;
-    update_canvas();
   }
 }
 
@@ -442,7 +440,6 @@ void button4() {
   // debug
   if (current_screen == DEBUG) { // moves ball in -y if in debug 
     paddle1_y++;
-    update_canvas();
   }
 }
 
