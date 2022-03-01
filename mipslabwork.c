@@ -29,10 +29,9 @@
 #define SINGLEPLAYER 'v'
 #define MULTIPLAYER 'w'
 #define LEADERBOARD 'l'
-#define DEBUG 'd'
-#define GAMEROUND 'd' // should be 'g' in future
-#define RESULTS 'r'
 #define SCORE 's'
+#define RESULTS 'r'
+#define CREDITS 'c'
 
 // screen size definitions
 #define SCREEN_WIDTH_FLOAT 127
@@ -43,6 +42,7 @@ int player1_points = 0; // keeps track of total round wins for player1
 int player2_points = 0; // keeps track of total round wins for player2
 
 char current_screen; // init current screen variable
+char old_screen; // used to determine if user has switched screen
 
 char int_to_char(int i) { return '0' + i; }
 
@@ -64,8 +64,8 @@ void user_isr( void )
     TMR2 = 0; // reset timer for timer2
     total_timeout++;
 
-    // updates ball if in debug
-    if (current_screen == DEBUG) { 
+    // updates ball if in a game
+    if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) { 
       update_ball_pos_on_velocity(); 
       update_canvas();
     }
@@ -317,7 +317,7 @@ void menu() {
   display_string(0, "--PONG DELUXE--");
   display_string(1, "1. Play");
   display_string(2, "2. Leaderboard");
-  display_string(3, "3. Debug");
+  display_string(3, "3. Credits");
   display_update();
 }
 
@@ -350,12 +350,8 @@ void singleplayer() {
 void multiplayer() {
   current_screen = MULTIPLAYER; // in multiplayer
 
-  // TEMPORARY
-  display_string(0, "Multiplayer");
-  display_string(1, "3. Back");
-  display_string(2, "");
-  display_string(3, "");
-  display_update();
+  center_ball();
+  update_canvas();
 }
 
 
@@ -369,14 +365,6 @@ void leaderboard() {
   display_string(2, "");
   display_string(3, "");
   display_update();
-}
-
-
-// handles a round of pong between player1 and player2
-void game_round() {
-  current_screen = GAMEROUND;
-  center_ball();
-  update_canvas();
 }
 
 
@@ -434,20 +422,8 @@ void score() {
 }
 
 
-// testing function for debug, subject to change
-void test() {
-  int i = 0;
-    for (i = 0; i<=31; i++)
-      set_pixel(i+96,i);
-}
+void credits() {
 
-// debug  screen, subject to change
-void debug() {
-  //current_screen = DEBUG;
-
-  // test
-  current_screen = GAMEROUND;
-  //update_canvas(); 
 }
 
 
@@ -481,8 +457,8 @@ void button1() {
   // if enough delay has passed for gameplay
   if ((total_timeout - press_delay) > delay_value_game_inputs) {
 
-    // debug
-    if (current_screen == DEBUG) {
+    // multiplayer
+    if (current_screen == MULTIPLAYER) {
       paddle2_y--;
     }
 
@@ -510,8 +486,8 @@ void button2() {
   // if enough delay has passed for gameplay input
   if (total_timeout - press_delay > delay_value_game_inputs) {
 
-    // debug
-    if (current_screen == DEBUG) {
+    // multiplayer
+    if (current_screen == MULTIPLAYER) {
       paddle2_y++;
     }
 
@@ -525,9 +501,10 @@ void button3() {
 
   // if enough delay has passed for menu switching
   if((total_timeout - press_delay) > delay_value_menu_inputs) {
-    // menu, go to debug
+
+    // menu, go to credits
     if (current_screen == MENU) { 
-      current_screen = DEBUG;
+      current_screen = CREDITS;
     }
 
     // start or leaderboard, go back to menu
@@ -535,9 +512,14 @@ void button3() {
       current_screen = MENU;
     }
 
-    // score
-    else if (current_screen == SCORE) {
-      current_screen = GAMEROUND;
+    // score from singleplayer
+    else if (current_screen == SCORE && old_screen == SINGLEPLAYER) {
+      current_screen = SINGLEPLAYER;
+    }
+
+    // score from multiplayer
+    else if (current_screen == SCORE) { // DEBUG OLDSCREEN
+      current_screen = MULTIPLAYER;
     }
 
     // results
@@ -546,15 +528,10 @@ void button3() {
     }
   }
 
-  // TEMPORARY... singleplayer or multiplayer, go back to play
-  else if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) {
-    current_screen = PLAY;
-  }
-
   // if enough delay has passed for gameplay inputs
   if (total_timeout - press_delay > delay_value_game_inputs) {
-    // debug
-    if (current_screen == DEBUG) {
+    // game
+    if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) {
       paddle1_y--;
     }
     
@@ -569,8 +546,8 @@ void button4() {
   // if enough delay has passed
   if (total_timeout - press_delay > delay_value_game_inputs) {
 
-    // debug
-    if (current_screen == DEBUG) {
+    // game
+    if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) {
       paddle1_y++;
     }
     
@@ -582,13 +559,11 @@ void button4() {
 // SW1
 void switch1() {
 
-  // debug
-  if (current_screen == DEBUG) // goes to menu if in debug
+  // game
+  if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) // goes to menu if in game
     current_screen = MENU;
 }
 
-
-char old_screen; // used to determine if user has switched screen
 
 // checks states and starts correct one
 void checkstate() {
@@ -597,8 +572,8 @@ void checkstate() {
   if (old_screen != current_screen) {
     old_screen = current_screen;
     
-    // clears display if not in debug 
-    if (current_screen != DEBUG || current_screen != GAMEROUND) {
+    // clears display if not in a game 
+    if (current_screen != SINGLEPLAYER || current_screen != MULTIPLAYER) {
       clear_display();
     }
 
@@ -619,32 +594,23 @@ void checkstate() {
 
       case MULTIPLAYER:
         multiplayer();
-        break;
-
-      // only debug for now, uses same variable temporarily
-      
-      case GAMEROUND:
-        game_round();
-        break;
-      
-
-      case RESULTS:
-        results();
-        break;
+        break;    
 
       case SCORE:
         score();
         break;
 
+      case RESULTS:
+        results();
+        break;
+
       case LEADERBOARD:
         leaderboard();
         break;
-      
-      /*
-      case DEBUG:
-        debug();
+
+      case CREDITS:
+        credits();
         break;
-      */
     }
   }
 }
