@@ -39,14 +39,30 @@
 #define SCREEN_WIDTH_FLOAT 127
 #define SCREEN_HEIGHT_FLOAT 31
 
+// difficulty definitions
+#define EASY 0
+#define HARD 1
+#define INCREASING 2
+
+// game
 const int rounds_to_win = 3; // rounds to win to win the whole game
 int player1_points = 0; // keeps track of total round wins for player1
 int player2_points = 0; // keeps track of total round wins for player2
 int is_singleplayer = 0; // if gamemode is in singleplayer or multilpayer
-int ai_difficulty = 0;
 
+// ai difficulty
+int difficulty = EASY;
+int ai_reaction_pixels; // interval of pixels to ball ai reacts within
+int ai_centers = 0;
+
+// screen
 char current_screen; // init current screen variable
 char old_screen; // used to determine if user has switched screen
+
+// delay
+int press_delay = 0; // delay for switching between options so same button isn't pressed immediately
+const int delay_value_game_inputs = 1; // how much to delay
+const int delay_value_menu_inputs = 3;
 
 char int_to_char(int i) { return '0' + i; } // converts an int to it's corresponding char 
 
@@ -56,6 +72,7 @@ char int_to_char(int i) { return '0' + i; } // converts an int to it's correspon
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
 int total_timeout = 0; // global timer
+int game_time = 0; // for singleplayer increasing difficulty
 int timeoutcount = 0; // used to keep track of number of time loops
 void update_ball_pos_on_velocity(); 
 void update_canvas();
@@ -82,6 +99,11 @@ void user_isr( void )
     // reset timeout
     if (timeoutcount++ == 10) {
       timeoutcount = 0;
+
+      // updates AI if in singleplayer mode
+      if (is_singleplayer) {
+        game_time++;
+      }
     }
   }
 
@@ -299,8 +321,10 @@ void calculate_reflection_and_set_velocity(){
 }
 
 void set_new_velocity_on_paddle_collision() {
+  
   // If ball on right side!
   if (ball_x > (SCREEN_WIDTH_FLOAT / 2) &&
+    
     // If ball is between the paddle and end
     ball_x >= (SCREEN_WIDTH_FLOAT - paddle_x) && ball_x < (SCREEN_WIDTH_FLOAT - paddle_x + ball_x_velocity + 1) && 
 
@@ -398,33 +422,96 @@ display_paddle() {
 }
 
 
+// initializes ai based on difficulty
+void difficulty_init() {
+  
+  // easy
+  if (difficulty == EASY) {
+    ai_reaction_pixels = 10;
+    ai_centers = 0;
+  }
+
+  // hard
+  else if (difficulty == HARD) {
+    ai_reaction_pixels == 80;
+    ai_centers = 1;
+  }
+
+  // increasing difficulty
+  else if (difficulty == INCREASING) {
+    ai_reaction_pixels = 40;
+  }
+
+  game_time = 0; // restarts game time
+}
+
+// moves ai witihin it's corresponding reaction time and relation to ball
+void ai_move() {
+
+  // if distance to ball is within length 
+  if ((SCREEN_WIDTH_FLOAT - paddle_x - ball_x ) < ai_reaction_pixels) {
+    
+    //if ball is coming towards AI paddle2
+    if((ball_x_velocity > 0)) {
+
+      // if enough delay has passed for gameplay
+      if ((total_timeout - press_delay) > delay_value_game_inputs) {
+      
+        // if ball is lower than paddle
+        if(ball_y > paddle2_y) {
+          paddle2_y++;
+        }
+
+        // if ball is higher than paddle, lower it's height
+        else if (ball_y < paddle2_y) {
+          paddle2_y--; 
+        }
+      }
+    }
+  }
+
+  // if ai is allowed to center it does so when ball is not within reaction time
+  else if (ai_centers) {
+    
+    // if not centered 
+    if (paddle2_y != 15) {
+
+      // over middle, decrease position
+      if (paddle2_y > 15.5) {
+        paddle2_y--;
+      }
+
+      // under middle, increase position
+      else if (paddle2_y < 15.5) {
+        paddle2_y++;
+      }
+    }
+  }
+}
+
 // updates AI inputs depending on where ball is, increase it's height 
 void ai_update() {
 
-  // only moves defensively when ball is close enough
-  if (SCREEN_WIDTH_FLOAT - paddle_x - ball_x < 40) {
-    // if ball is lower than paddle
-    if(ball_y > paddle2_y) {
-      paddle2_y++;
-    }
-
-    // if ball is heigher than paddle, lower it's height
-    else if (ball_y < paddle2_y) {
-      paddle2_y--; 
-    }
+  // easy or hard, move as usual
+  if (difficulty == EASY || difficulty == HARD) {
+    ai_move();
   }
 
-  // if not centered 
-  else if (paddle2_y != 15) {
-    if (paddle2_y > 15.5) {
-      paddle2_y--;
+  // increasing difficulty, adds reaction pixels can center over time
+  else if (difficulty == INCREASING) {
+
+    // decreases reaction time with game time
+    if (ai_reaction_pixels > 40) {
+      ai_reaction_pixels += 1;
     }
-    else if (paddle2_y < 15.5) {
-      paddle2_y++;
-    }
-  }
     
+    ai_move();
 
+    // starts to center after a while
+    if (difficulty == INCREASING && (game_time > 100)) {
+      ai_centers = 1;
+    }
+  }
 }
 
 
@@ -463,26 +550,28 @@ void play() {
   display_update();
 }
 
+
 // chose difficulty
 void difficulty_options() {
   current_screen = DIFFICULTY; // in screen
   display_string(0, "1. Easy");
-  display_string(1, "2. Medium");
-  display_string(2, "3. Hard");
+  display_string(1, "2. Hard");
+  display_string(2, "3. Increasing");
   display_string(3, "4. Back");
   display_update();
 }
 
 
-// WIP... singleplayer screen
+// singleplayer screen
 void singleplayer() {
   current_screen = SINGLEPLAYER; // in singleplayer
   is_singleplayer = 1;
   center_ball(); // ??
+  difficulty_init(); // initialize the selected difficulty
 }
 
 
-// WIP... multiplayer screen
+// multiplayer screen
 void multiplayer() {
   current_screen = MULTIPLAYER; // in multiplayer
   is_singleplayer = 0;
@@ -490,7 +579,7 @@ void multiplayer() {
 }
 
 
-// WIP... leaderboard screen
+// leaderboard screen
 void leaderboard() {
   current_screen = LEADERBOARD; // in leaderboard
 
@@ -586,11 +675,6 @@ void credits() {
   IO
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
-int press_delay = 0; // delay for switching between options so same button isn't pressed immediately
-const int delay_value_game_inputs = 1; // how much to delay
-const int delay_value_menu_inputs = 3;
-
-
 // BTN1
 void button1() {
 
@@ -604,6 +688,12 @@ void button1() {
 
     // play
     else if (current_screen == PLAY) {
+      current_screen = DIFFICULTY;
+    }
+
+    // difficulty options
+    else if (current_screen == DIFFICULTY) {
+      difficulty = EASY;
       current_screen = SINGLEPLAYER;
     }
   }
@@ -629,6 +719,12 @@ void button2() {
     // menu
     if (current_screen == MENU) {
       current_screen = LEADERBOARD;
+    }
+
+    // difficulty options
+    else if (current_screen == DIFFICULTY) {
+      difficulty = HARD;
+      current_screen = SINGLEPLAYER;
     }
 
     // play
@@ -666,6 +762,12 @@ void button3() {
       current_screen = MENU;
     }
 
+    // difficulty options
+    else if (current_screen == DIFFICULTY) {
+      difficulty = INCREASING;
+      current_screen = SINGLEPLAYER;
+    }
+
     // score from singleplayer
     else if (current_screen == SCORE && is_singleplayer) {
       current_screen = SINGLEPLAYER;
@@ -697,6 +799,13 @@ void button3() {
 // BTN4
 void button4() {
 
+  // if enough delay has passed for menu switching
+  if((total_timeout - press_delay) > delay_value_menu_inputs) {
+    // difficulty options
+    if (current_screen == DIFFICULTY) {
+      current_screen = PLAY;
+    }
+  }
   // if enough delay has passed
   if (total_timeout - press_delay > delay_value_game_inputs) {
 
@@ -713,7 +822,7 @@ void button4() {
 // SW1
 void switch1() {
 
-  // game
+  // hidden quit game
   if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) // goes to menu if in game
     current_screen = MENU;
 }
@@ -744,6 +853,10 @@ void checkstate() {
 
       case SINGLEPLAYER:
         singleplayer();
+        break;
+
+      case DIFFICULTY:
+        difficulty_options();
         break;
 
       case MULTIPLAYER:
