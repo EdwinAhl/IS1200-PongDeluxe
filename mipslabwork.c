@@ -53,8 +53,9 @@ void user_isr( void )
     TMR2 = 0; // reset timer for timer2
     total_timeout++;
 
-    update_ball_pos_on_velocity();
+    // updates ball if in debug
     if (current_screen == DEBUG) { 
+      update_ball_pos_on_velocity(); 
       update_canvas();
     }
 
@@ -155,9 +156,10 @@ float get_between(float input, int start, int end){
 int floor(float input) {
   return (int) input;
 }
+
 // Same as math ceil, but doesnt round up above the max. E.g 6.0 => 6.0, 6.1 => 7.0, 
 int ceil_custom(float input, float max) {
-  if (max >= input + 1) return floor(input);
+  // if (max <= input + 1) return floor(input);
   return (int) (input + 1);
 }
 
@@ -449,7 +451,7 @@ void button4() {
 
   // if enough delay has passed
   if (total_timeout - press_delay > delay_value_game_inputs) {
-    
+
     // debug
     if (current_screen == DEBUG) {
       paddle1_y++;
