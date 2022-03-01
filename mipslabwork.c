@@ -336,19 +336,19 @@ void difficulty_init() {
   
   // easy
   if (difficulty == EASY) {
-    ai_reaction_pixels = 20;
+    ai_reaction_pixels = 10;
     ai_centers = 0;
   }
 
   // hard
   else if (difficulty == HARD) {
-    ai_reaction_pixels == 120;
+    ai_reaction_pixels == 80;
     ai_centers = 1;
   }
 
   // increasing difficulty
   else if (difficulty == INCREASING) {
-    ai_reaction_pixels = 5;
+    ai_reaction_pixels = 40;
   }
 
   game_time = 0; // restarts game time
@@ -386,12 +386,12 @@ void ai_move() {
     if (paddle2_y != 15) {
 
       // over middle, decrease position
-      if (paddle2_y > 15) {
+      if (paddle2_y > 15.5) {
         paddle2_y--;
       }
 
       // under middle, increase position
-      else if (paddle2_y < 15) {
+      else if (paddle2_y < 15.5) {
         paddle2_y++;
       }
     }
