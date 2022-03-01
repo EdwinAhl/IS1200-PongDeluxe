@@ -44,7 +44,14 @@ int player2_points = 0; // keeps track of total round wins for player2
 
 char current_screen; // init current screen variable
 
-
+/* Helper function, local to this file.
+   Converts a number to hexadecimal ASCII digits. */
+static void num32asc( char * s, int n ) 
+{
+  int i;
+  for( i = 28; i >= 0; i -= 4 )
+    *s++ = "0123456789ABCDEF"[ (n >> i) & 15 ];
+}
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////
   TIME
@@ -183,6 +190,31 @@ float ball_y_velocity = 1;
 float ball_x = SCREEN_WIDTH_FLOAT / 2; // 0 <= x <= 127
 float ball_y = SCREEN_HEIGHT_FLOAT / 2; // 0 <= y <= 31
 
+// paddle values, 7 pixles from each side
+const float paddle_x = 7;
+// This should always be an odd number, otherwise set_new_velocity_on_paddle_collision will fail.
+const int paddle_height = 9;
+int paddle_middle_height = 4; //(int) ((paddle_height-1) / 2); // 9 => 4
+
+float paddle1_y = 15.5f;
+float paddle2_y = 15.5f;
+
+void set_new_velocity_on_paddle_collision() {
+  // If ball on right side!
+  if (ball_x > (SCREEN_WIDTH_FLOAT / 2) &&
+    // If ball is between the paddle and end, if ball y is within paddle height
+    ball_x >= (SCREEN_WIDTH_FLOAT - paddle_x) && ball_y < (paddle2_y + paddle_middle_height + 0.5) && ball_y > (paddle2_y - paddle_middle_height - 0.5)
+  ) {
+    ball_x_velocity = -ball_x_velocity;
+
+  // If ball on left side!
+  } else if (ball_x < (SCREEN_WIDTH_FLOAT / 2) &&
+    // If ball is between the paddle and end, if ball y is within paddle height
+    ball_x <= paddle_x && ball_y < (paddle1_y + paddle_middle_height + 0.5) && ball_y > (paddle1_y - paddle_middle_height - 0.5)
+  ){
+    ball_x_velocity = -ball_x_velocity;
+  }
+}
 
 // Inverses the velocity on edge bounces.
 void set_new_velocity_on_edge() {
@@ -215,7 +247,7 @@ void update_ball_pos_on_velocity() {
 // creates the ball and displays it based on it's position
 void display_ball() {
 
-  //update_ball_pos_on_velocity();
+  set_new_velocity_on_paddle_collision();
   set_new_velocity_on_edge();  // Sets the new velocity, important that it's called before get_between.
   // Makes sure the ball is within the screen.
   ball_x = get_between(ball_x, 0, SCREEN_WIDTH_FLOAT);
@@ -234,12 +266,6 @@ void display_ball() {
   // display_image(display); //TODO PLACE SOMEWHERE ELSE
 }
 
-
-// paddle values, 7 pixles from each side
-const float paddle_x = 7;
-float paddle1_y = 15.5f;
-float paddle2_y = 15.5f;
-
 // handles both paddles coordinates and velocity
 display_paddle() {
   
@@ -247,27 +273,19 @@ display_paddle() {
   paddle1_y = get_between(paddle1_y, (paddle_x+1)/2, 31-(paddle_x+1)/2); //(paddle_x+1)/2 for it's with from the middle including bit
   paddle2_y = get_between(paddle2_y, (paddle_x+1)/2, 31-(paddle_x+1)/2);
 
-  // padle1
-  set_pixel(paddle_x-1, paddle1_y+4); 
-  set_pixel(paddle_x, paddle1_y+3);
-  set_pixel(paddle_x, paddle1_y+2);
-  set_pixel(paddle_x, paddle1_y+1);
-  set_pixel(paddle_x, paddle1_y+0);
-  set_pixel(paddle_x, paddle1_y-1);
-  set_pixel(paddle_x, paddle1_y-2);
-  set_pixel(paddle_x, paddle1_y-3);
-  set_pixel(paddle_x-1, paddle1_y-4);
+  // paddle1
+  int i = -paddle_middle_height;
+  for (i; i < paddle_middle_height+1; i++) {
+    int new_paddle_x = paddle_x - (i == -paddle_middle_height || i == paddle_middle_height);
+    set_pixel(new_paddle_x, paddle1_y+i);
+  }
 
-  // padle2
-  set_pixel(127 - paddle_x+1, paddle2_y+4);
-  set_pixel(127 - paddle_x, paddle2_y+3);
-  set_pixel(127 - paddle_x, paddle2_y+2);
-  set_pixel(127 - paddle_x, paddle2_y+1);
-  set_pixel(127 - paddle_x, paddle2_y+0);
-  set_pixel(127 - paddle_x, paddle2_y-1);
-  set_pixel(127 - paddle_x, paddle2_y-2);
-  set_pixel(127 - paddle_x, paddle2_y-3);
-  set_pixel(127 - paddle_x+1, paddle2_y-4);
+  // paddle2
+  i = -paddle_middle_height;
+  for (i; i < paddle_middle_height+1; i++) {
+    int new_paddle_x = SCREEN_WIDTH_FLOAT - paddle_x + (i == -paddle_middle_height || i == paddle_middle_height);
+    set_pixel(new_paddle_x, paddle2_y+i);
+  }
 }
 
 
@@ -389,13 +407,10 @@ void score() {
     current_screen = WINNER;
   }
   else {
-    /*
-    char p1p[80];
-    snprintf(p1p, "P1 = %d", player1_points);
-
-    char p2p[80];
-    snprintf(p2p, "P2 = %d", player2_points);
-    */
+    char p1p[] = "P1 =  ";
+    num32asc(&p1p[5], player1_points);
+    char p2p[] = "P2 =  ";
+    num32asc(&p2p[5], player2_points);
 
     display_string(0, p1p);
     display_string(1, p2p);
