@@ -40,6 +40,7 @@
 const int rounds_to_win = 3; // rounds to win to win the whole game
 int player1_points = 0; // keeps track of total round wins for player1
 int player2_points = 0; // keeps track of total round wins for player2
+int is_singleplayer = 0; // if gamemode is in singleplayer or multilpayer
 
 char current_screen; // init current screen variable
 char old_screen; // used to determine if user has switched screen
@@ -336,6 +337,7 @@ void play() {
 // WIP... singleplayer screen
 void singleplayer() {
   current_screen = SINGLEPLAYER; // in singleplayer
+  is_singleplayer = 1;
 
   // TEMPORARY
   display_string(0, "Singleplayer");
@@ -349,6 +351,7 @@ void singleplayer() {
 // WIP... multiplayer screen
 void multiplayer() {
   current_screen = MULTIPLAYER; // in multiplayer
+  is_singleplayer = 0;
 
   center_ball();
   update_canvas();
@@ -368,32 +371,6 @@ void leaderboard() {
 }
 
 
-// shows which player won after a game
-void results () {
-  current_screen = RESULTS;
-  
-  // player1 won game
-  if (player1_points >= rounds_to_win) {
-    display_string(0, "Player1 Win");
-  }
-
-  // player2 won game
-  if (player2_points >= rounds_to_win) {
-    display_string(0, "Player2 Win");
-  }
-  
-  // go back
-  display_string(1, "");
-  display_string(2, "3. Back");
-  display_string(3, "");
-  display_update();
-
-  // reset points
-  player1_points = 0;
-  player2_points = 0;
-}
-
-
 // show current score in between points
 void score() {
   current_screen = SCORE;
@@ -410,6 +387,10 @@ void score() {
 
     // player2 points to char array
     char p2p[] = "P2 =  "; 
+    if (is_singleplayer) { // if it should say AI instead of P2
+      p2p[0] = 'A';
+      p2p[1] = 'I';
+    }
     p2p[5] = int_to_char(player2_points);
     
 
@@ -419,6 +400,37 @@ void score() {
     display_string(3, "3. Continue");
     display_update();
   }
+}
+
+
+// shows which player won after a game
+void results () {
+  current_screen = RESULTS;
+  
+  // player1 won game
+  if (player1_points >= rounds_to_win) {
+    display_string(0, "Player1 won!");
+  }
+
+  // player2 or AI won game
+  if (player2_points >= rounds_to_win) {
+    if (is_singleplayer) {
+      display_string(0, "AI won!");
+    }
+    else {
+      display_string(0, "Player2 won!");
+    }
+  }
+  
+  // go back
+  display_string(1, "");
+  display_string(2, "3. Back");
+  display_string(3, "");
+  display_update();
+
+  // reset points
+  player1_points = 0;
+  player2_points = 0;
 }
 
 
@@ -512,18 +524,18 @@ void button3() {
       current_screen = CREDITS;
     }
 
-    // start or leaderboard, go back to menu
-    else if (current_screen == PLAY || current_screen == LEADERBOARD) {
+    // start, leaderboard or credits, go back to menu
+    else if (current_screen == PLAY || current_screen == LEADERBOARD || current_screen == CREDITS) {
       current_screen = MENU;
     }
 
     // score from singleplayer
-    else if (current_screen == SCORE && old_screen == SINGLEPLAYER) {
+    else if (current_screen == SCORE && is_singleplayer) {
       current_screen = SINGLEPLAYER;
     }
 
     // score from multiplayer
-    else if (current_screen == SCORE) { // DEBUG OLDSCREEN
+    else if (current_screen == SCORE && !is_singleplayer) { 
       current_screen = MULTIPLAYER;
     }
 
