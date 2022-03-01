@@ -186,9 +186,14 @@ float ball_x_velocity = 1;
 float ball_y_velocity = 1;
 
 
-// Middle value as start position // TODO make a reset_ball method for replaying
-float ball_x = SCREEN_WIDTH_FLOAT / 2; // 0 <= x <= 127
-float ball_y = SCREEN_HEIGHT_FLOAT / 2; // 0 <= y <= 31
+// Middle value as start position
+float ball_x = 0; // 0 <= x <= 127
+float ball_y = 0; // 0 <= y <= 31
+
+void center_ball() {
+  ball_x = SCREEN_WIDTH_FLOAT / 2;
+  ball_y = SCREEN_HEIGHT_FLOAT / 2;
+}
 
 // paddle values, 7 pixles from each side
 const float paddle_x = 7;
@@ -367,7 +372,7 @@ void leaderboard() {
 // handles a round of pong between player1 and player2
 void game_round() {
   current_screen = GAMEROUND;
-
+  center_ball();
   update_canvas();
 }
 
