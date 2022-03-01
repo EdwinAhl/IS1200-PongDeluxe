@@ -22,6 +22,7 @@
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
 #include "mipslab.h"  /* Declatations for these labs */
 #include <stdio.h>
+#include <math.h>
 
 // screen state definitions
 #define MENU 'm'
@@ -207,6 +208,96 @@ int paddle_middle_height = 4; //(int) ((paddle_height-1) / 2); // 9 => 4
 float paddle1_y = 15.5f;
 float paddle2_y = 15.5f;
 
+
+
+// The elipsis is calculated with f(x), this function solves f'(x) for the elipsis.
+// Used to calculate the reflection normal. 
+
+// Half of paddle_height = 4.5
+// f(x) = sqrt(4.5² - 4.5²x²)
+// f'(x) = ...
+float calculate_derivative(float intercept_x, int is_ball_upper){
+  // 4.5
+  float half_paddle = paddle_middle_height + 0.5;
+  // 4.5²
+  float half_paddle_exp = half_paddle * half_paddle;
+
+  float negative_derivative = (half_paddle_exp * intercept_x) / 
+    sqrt(-half_paddle_exp * intercept_x * intercept_x + half_paddle_exp);
+
+  return is_ball_upper ? -negative_derivative : negative_derivative;
+}
+
+// ax² + bx + c = 0
+// Solve for x
+float abc_formula(float a, float b, float c){
+  float p = b/a;
+  float q = c/a;
+  return pq_formula(p, q);
+}
+
+// x² + px + q = 0
+// Solve for x
+float pq_formula(float p, float q){
+  return -(p / 2) + sqrt(((p*p) / 4) - q);
+}
+
+// This function calculates the relative x-coordinate the ball hits the epipsis at.
+// Used to calculate the derivative.
+
+// f(x) = slope * x + distance_from_paddle_y;
+// Solve for x
+float calculate_intercept_x(float slope, int is_ball_left){
+  float abs_slope = abs(slope);
+
+  float paddle_y = is_ball_left ? paddle2_y : paddle1_y;
+  float distance_from_paddle_y = abs(paddle_y - ball_y);
+  float distance_from_paddle_x = is_ball_left ? abs(SCREEN_WIDTH_FLOAT - paddle_x - ball_x) : abs(ball_x - paddle_x);
+  
+  // Negative is below:
+
+  // 4.5
+  float half_paddle = paddle_middle_height + 0.5;
+  // 4.5²
+  float half_paddle_exp = half_paddle * half_paddle;
+
+  // Solve sqrt(4.5²-4.5²x²) = slope * x + distance_from_paddle_y
+  float positive_intercept = abc_formula( -(half_paddle_exp - abs_slope * abs_slope), 2*abs_slope, distance_from_paddle_y*distance_from_paddle_y - half_paddle_exp);
+  return is_ball_left ? -positive_intercept : positive_intercept;
+}
+
+// This sets the new mirrored velocity based on 
+void calculate_reflection_and_set_velocity(){
+  // If the ball is left of the paddle. Eg if it's on the right side of the
+  // screen it's left of the paddle
+  int is_ball_left = ball_x > SCREEN_WIDTH_FLOAT / 2;
+  // If ball is on the upper side of the paddle.
+  int is_ball_upper = ball_y < SCREEN_HEIGHT_FLOAT / 2;
+
+  float slope = ball_y_velocity / ball_x_velocity;
+  float intercept_x = calculate_intercept_x(slope, is_ball_left);
+  
+  // --- Calculate the mirror with the normal and an incoming vector ---
+  float normal_vector_x = calculate_derivative(intercept_x, is_ball_upper);
+  float normal_vector_y = 1;
+
+  float incoming_vector_x = -ball_x_velocity;
+  float incoming_vector_y = -ball_y_velocity;
+
+  // reflection = 𝟐𝒑𝒓𝒐𝒋_𝒗⃗⃗⃗(𝒖⃗⃗⃗) − 𝒖
+  float base_reflection = 2 * 
+    // U * V
+    (normal_vector_x * incoming_vector_x + normal_vector_y * incoming_vector_y ) /
+    // div ||v||²
+    (normal_vector_x * normal_vector_x + normal_vector_y * normal_vector_y)
+  
+  ball_x_velocity = base_reflection * normal_vector_x - incoming_vector_x;
+
+  // Need to invert ball_y_velocity if the ball is coming from the right.
+  float base_ball_y_velocity = base_reflection * normal_vector_y - incoming_vector_y;
+  ball_y_velocity = is_ball_left ? base_ball_y_velocity : -base_ball_y_velocity;
+}
+
 void set_new_velocity_on_paddle_collision() {
   // If ball on right side!
   if (ball_x > (SCREEN_WIDTH_FLOAT / 2) &&
@@ -217,8 +308,8 @@ void set_new_velocity_on_paddle_collision() {
     ball_y < (paddle2_y + paddle_middle_height + 0.5) && 
     ball_y > (paddle2_y - paddle_middle_height - 0.5)
   ) {
-    ball_x_velocity = -ball_x_velocity;
-
+    //ball_x_velocity = -ball_x_velocity;
+    calculate_reflection_and_set_velocity();
   // If ball on left side!
   } else if (ball_x < (SCREEN_WIDTH_FLOAT / 2) &&
     // If ball is between the paddle and start
@@ -228,7 +319,8 @@ void set_new_velocity_on_paddle_collision() {
     ball_y < (paddle1_y + paddle_middle_height + 0.5) && 
     ball_y > (paddle1_y - paddle_middle_height - 0.5)
   ){
-    ball_x_velocity = -ball_x_velocity;
+    //ball_x_velocity = -ball_x_velocity;
+    calculate_reflection_and_set_velocity();
   }
 }
 
@@ -252,7 +344,6 @@ void set_new_velocity_on_edge() {
     ball_y_velocity = -ball_y_velocity;
   }
 }
-
 
 // Might need shorter name but this is good enough for now.
 void update_ball_pos_on_velocity() {
