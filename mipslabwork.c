@@ -22,7 +22,6 @@
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
 #include "mipslab.h"  /* Declatations for these labs */
 #include <stdio.h>
-#include <math.h>
 
 // screen state definitions
 #define MENU 'm'
@@ -76,6 +75,7 @@ int game_time = 0; // for singleplayer increasing difficulty
 int timeoutcount = 0; // used to keep track of number of time loops
 void update_ball_pos_on_velocity(); 
 void update_canvas();
+void ai_update();
 
 /* Interrupt Service Routine */
 void user_isr( void )
@@ -195,13 +195,13 @@ float get_between(float input, int start, int end){
 
 
 // math floor and ceiling
-int floor(float input) {
+int floor_custom(float input) {
   return (int) input;
 }
 
 // Same as math ceil, but doesnt round up above the max. E.g 6.0 => 6.0, 6.1 => 7.0, 
 int ceil_custom(float input, float max) {
-  if (max <= input + 1) return floor(input);
+  if (max <= input + 1) return floor_custom(input);
   return (int) (input + 1);
 }
 
@@ -230,6 +230,32 @@ int paddle_middle_height = 4; //(int) ((paddle_height-1) / 2); // 9 => 4
 float paddle1_y = 15.5f;
 float paddle2_y = 15.5f;
 
+// Fast inverse square root, from Quake III Arena
+// Shamelessly stolen to get a sqrt() function on mips
+float Q_rsqrt( float number )
+{
+	long i;
+	float x2, y;
+	const float threehalfs = 1.5F;
+
+	x2 = number * 0.5F;
+	y  = number;
+	i  = * ( long * ) &y;                       // evil floating point bit level hacking
+	i  = 0x5f3759df - ( i >> 1 );               // what the fuck? 
+	y  = * ( float * ) &i;
+	y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
+  y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
+
+	return y;
+}
+
+float sqrt( float number ){
+  return 1/Q_rsqrt(number);
+}
+
+float abs( float number) {
+  return number < 0 ? -number : number;
+}
 
 
 // The elipsis is calculated with f(x), this function solves f'(x) for the elipsis.
@@ -250,18 +276,18 @@ float calculate_derivative(float intercept_x, int is_ball_upper){
   return is_ball_upper ? -negative_derivative : negative_derivative;
 }
 
+// x² + px + q = 0
+// Solve for x
+float pq_formula(float p, float q){
+  return -(p / 2) + sqrt(((p*p) / 4) - q);
+}
+
 // ax² + bx + c = 0
 // Solve for x
 float abc_formula(float a, float b, float c){
   float p = b/a;
   float q = c/a;
   return pq_formula(p, q);
-}
-
-// x² + px + q = 0
-// Solve for x
-float pq_formula(float p, float q){
-  return -(p / 2) + sqrt(((p*p) / 4) - q);
 }
 
 // This function calculates the relative x-coordinate the ball hits the epipsis at.
@@ -311,7 +337,7 @@ void calculate_reflection_and_set_velocity(){
     // U * V
     (normal_vector_x * incoming_vector_x + normal_vector_y * incoming_vector_y ) /
     // div ||v||²
-    (normal_vector_x * normal_vector_x + normal_vector_y * normal_vector_y)
+    (normal_vector_x * normal_vector_x + normal_vector_y * normal_vector_y);
   
   ball_x_velocity = base_reflection * normal_vector_x - incoming_vector_x;
 
@@ -388,11 +414,11 @@ void display_ball() {
   // clear_display(); // reset screen, //TODO PLACE SOMEWHERE ELSE
 
   // Creates 4 pixels for the ball based on the center point.
-  set_pixel(floor(ball_x), floor(ball_y));
-  set_pixel(floor(ball_x), ceil_custom(ball_y, SCREEN_HEIGHT_FLOAT));
+  set_pixel(floor_custom(ball_x), floor_custom(ball_y));
+  set_pixel(floor_custom(ball_x), ceil_custom(ball_y, SCREEN_HEIGHT_FLOAT));
 
   set_pixel(ceil_custom(ball_x, SCREEN_WIDTH_FLOAT), ceil_custom(ball_y, SCREEN_HEIGHT_FLOAT));
-  set_pixel(ceil_custom(ball_x, SCREEN_WIDTH_FLOAT), floor(ball_y));
+  set_pixel(ceil_custom(ball_x, SCREEN_WIDTH_FLOAT), floor_custom(ball_y));
 
   //last_display_ball = totaltimeout;
   // display_image(display); //TODO PLACE SOMEWHERE ELSE
