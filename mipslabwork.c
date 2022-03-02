@@ -290,7 +290,7 @@ float calculate_intercept_x(float slope, int is_ball_left){
 
   // relative distance to paddle center
   float paddle_y = is_ball_left ? paddle2_y : paddle1_y;
-  float distance_from_paddle_y = -(paddle_y - ball_y);
+  float distance_from_paddle_y = (paddle_y - ball_y);
   float distance_from_paddle_x = is_ball_left ? -(SCREEN_WIDTH_FLOAT - paddle_x - ball_x) : ball_x - paddle_x;
 
   // halft paddle
@@ -306,7 +306,6 @@ float calculate_intercept_x(float slope, int is_ball_left){
   );
   return intercept_x;
 }
-
 
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -394,7 +393,7 @@ void calculate_reflection_and_set_velocity(){
 
   // If the ball is left of the paddle. Eg if it's on the right side of the
   // screen it's left of the paddle, 5 ticks backwards.
-  int is_ball_left = (ball_x - ball_x_velocity * 5) > SCREEN_WIDTH_FLOAT / 2;
+  int is_ball_left = ball_x > SCREEN_WIDTH_FLOAT / 2;
   // If ball is on the upper side of the paddle.
   float current_paddle_y = is_ball_left ? paddle2_y : paddle1_y;
   int is_ball_upper = (ball_y - ball_y_velocity * 5) < current_paddle_y;
@@ -409,7 +408,8 @@ void calculate_reflection_and_set_velocity(){
 
   // --- Calculate the mirror with the normal and an incoming vector ---
   float normal_vector_x = calculate_derivative(intercept_x);
-  float normal_vector_y = -is_ball_upper_multiplier;
+  float normal_vector_y = is_ball_upper_multiplier;
+  //printf("intercept_x %f\n", intercept_x);
 
   // reflection vector
   float reflection_vector_x = 1;
@@ -422,19 +422,23 @@ void calculate_reflection_and_set_velocity(){
     // div ||v||²
     (normal_vector_x * normal_vector_x + normal_vector_y * normal_vector_y);
 
+
   // These can be used but leads to unpredictable speeds
   float base_ball_x_velocity = -is_ball_left_multiplier * (base_reflection * normal_vector_x - reflection_vector_x);
-  float base_ball_y_velocity = is_ball_upper_multiplier * (base_reflection * normal_vector_y - reflection_vector_y);
+  float base_ball_y_velocity = is_ball_left_multiplier * (base_reflection * normal_vector_y - reflection_vector_y);
+
 
   // This is used to normalize the new velocity as to make it the same total speed
   float reflection_normal = sqrt(base_ball_x_velocity * base_ball_x_velocity + base_ball_y_velocity * base_ball_y_velocity);
   float current_normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity);
 
+  //printf("base_ball_x_velocity %f\n", (base_ball_x_velocity / reflection_normal));
+  //printf("base_ball_y_velocity %f\n\n", (base_ball_y_velocity / reflection_normal));
+
   // changes ball velocity based on reflection
   ball_y_velocity = (base_ball_y_velocity / reflection_normal) * current_normal;
   ball_x_velocity = (base_ball_x_velocity / reflection_normal) * current_normal;
 }
-
 
 // sets new veclocity based on where ball hit the paddle
 void set_new_velocity_on_paddle_collision() {
