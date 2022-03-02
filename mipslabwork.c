@@ -59,8 +59,8 @@ int is_singleplayer = 0; // if gamemode is in singleplayer or multilpayer
 // ai difficulty
 int difficulty = EASY;
 int ai_reaction_pixels; // interval of pixels to ball ai reacts within
-int ai_centers = 0;
-float speedup = 1.001; // ball velocity speedup for increasing difficulty
+int ai_centers = 0;     // if the AI is allowed to recenter for a defensive position
+float speedup = 1.0002; // ball velocity speedup for increasing difficulty
 
 // screen
 char current_screen; // init current screen variable
@@ -393,7 +393,7 @@ void calculate_reflection_and_set_velocity(){
 
   // These can be used but leads to unpredictable speeds
   float base_ball_x_velocity = -is_ball_left_multiplier * (base_reflection * normal_vector_x - reflection_vector_x);
-  float base_ball_y_velocity = -is_ball_upper_multiplier * (base_reflection * normal_vector_y - reflection_vector_y);
+  float base_ball_y_velocity = is_ball_upper_multiplier * (base_reflection * normal_vector_y - reflection_vector_y);
 
   // This is used to normalize the new velocity as to make it the same total speed
   float reflection_normal = sqrt(base_ball_x_velocity * base_ball_x_velocity + base_ball_y_velocity * base_ball_y_velocity);
@@ -718,15 +718,16 @@ void save_to_leaderboard() {
       // if not last, move down
       if (i != ARRAY_SIZE-1) { 
         
-        // previous score 
-        leaderboard_scores[i+1] = leaderboard_scores[i]; 
+        leaderboard_scores[i+1] = leaderboard_scores[i]; // previous score 
 
-        // previous name
+        // previous name char wise
         leaderboard_names[i+1][0] = leaderboard_names[i][0];
         leaderboard_names[i+1][1] = leaderboard_names[i][1];
         leaderboard_names[i+1][2] = leaderboard_names[i][2];
       }
     }
+
+    // no need to check scores over if current is larger than players points, since leaderboard is sorted
     else {
       break;
     }
@@ -771,7 +772,7 @@ int got_highscore() {
   int i = 0;
   for (i = 0; i < 3; i++) {
     if (player1_points > leaderboard_scores[i])
-    highscore = 1;
+      highscore = 1;
   }
   
   return highscore;
@@ -837,6 +838,7 @@ void results () {
 
     display_string(1, points);
 
+    // new highscore
     if(got_highscore()) {
       display_string(0, "NEW HIGHSCORE!");
       display_string(2, "3. Submit");
@@ -846,6 +848,8 @@ void results () {
       name[1] = ' ';
       name[2] = ' ';
     }
+
+    // no new highscore
     else {
       display_string(0, "");
       display_string(2, "");
@@ -1059,11 +1063,7 @@ void button4() {
 
 // SW1
 void switch1() {
-
-  // secret quit game
-  if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER || current_screen == SCORE) { // goes to menu if in game
-    current_screen = MENU;
-  }
+  current_screen = MENU; // secret quit game to menu wherever the user is
 }
 
 
@@ -1112,6 +1112,10 @@ void checkstate() {
 
       case LEADERBOARD:
         leaderboard();
+        break;
+
+      case WRITE_LEADERBOARD:
+        write_to_leaderboard();
         break;
 
       case CREDITS:
