@@ -334,6 +334,7 @@ float calculate_intercept_x(float slope, int is_ball_left){
 
 // This sets the new mirrored velocity based on 
 void calculate_reflection_and_set_velocity(){
+
   // If the ball is left of the paddle. Eg if it's on the right side of the
   // screen it's left of the paddle
   int is_ball_left = ball_x > SCREEN_WIDTH_FLOAT / 2;
@@ -479,7 +480,7 @@ void difficulty_init() {
 
   // hard
   else if (difficulty == HARD) {
-    ai_reaction_pixels == 80;
+    ai_reaction_pixels == 100;
     ai_centers = 1;
   }
 
@@ -550,13 +551,13 @@ void ai_update() {
     if (ai_reaction_pixels > 40) {
       ai_reaction_pixels += 1;
     }
-    
-    ai_move();
 
     // starts to center after a while
-    if (difficulty == INCREASING && (game_time > 100)) {
+    if (difficulty == INCREASING && (game_time > 1)) {
       ai_centers = 1;
     }
+
+    ai_move();
   }
 }
 
@@ -868,9 +869,10 @@ void button4() {
 // SW1
 void switch1() {
 
-  // hidden quit game
-  if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) // goes to menu if in game
+  // secret quit game
+  if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER || current_screen == SCORE) { // goes to menu if in game
     current_screen = MENU;
+  }
 }
 
 
