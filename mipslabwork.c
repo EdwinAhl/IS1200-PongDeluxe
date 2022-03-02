@@ -701,16 +701,35 @@ char name[3];
 void save_to_leaderboard() {
 
   int i = 0;
-  for (i = 0; i < ARRAY_SIZE; i++) {
+  for (i = ARRAY_SIZE-1; i >= 0; i--) {
+
+    // if player points larger than current leaderboard positions score
     if (player2_points > leaderboard_scores[i]) {
-      if (i < ARRAY_SIZE-1) {
-        leaderboard_scores[i-1] = leaderboard_scores[i];
-        leaderboard_names[i-1] = leaderboard_names[i]
+      
+      // if not last, move down
+      if (i != ARRAY_SIZE-1) { 
+        
+        // previous score 
+        leaderboard_scores[i+1] = leaderboard_scores[i]; 
+
+        // previous name
+        leaderboard_names[i+1][0] = leaderboard_names[i][0];
+        leaderboard_names[i+1][1] = leaderboard_names[i][1];
+        leaderboard_names[i+1][2] = leaderboard_names[i][2];
       }
-      leaderboard_scores[i] = player2_points;
-      continue; 
+    }
+    else {
+      break;
     }
   }
+
+  //current score 
+  leaderboard_scores[i] = player2_points;
+
+  // current name
+  leaderboard_names[i][0] = leaderboard_names[i][0];
+  leaderboard_names[i][1] = leaderboard_names[i][1];
+  leaderboard_names[i][2] = leaderboard_names[i][2];
 }
 
 // player can write name to leaderboard after win
