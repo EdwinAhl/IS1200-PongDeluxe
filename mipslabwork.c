@@ -88,7 +88,7 @@ float paddle2_y = 15.5f;
 
 
 // ball x,y starting value
-float start_velocity = 1.5;
+float start_velocity = 0.375; // 1.5 / 4
 float ball_x_velocity = 1;
 float ball_y_velocity = 1;
 
@@ -153,7 +153,7 @@ void user_isr( void )
     }
 
     // reset timeout
-    if (timeoutcount++ == 10) {
+    if (timeoutcount++ == 40) {
       timeoutcount = 0;
 
       // updates AI if in singleplayer mode
@@ -405,16 +405,18 @@ void calculate_reflection_and_set_velocity(){
 
 // sets new veclocity based on where ball hit the paddle
 void set_new_velocity_on_paddle_collision() {
-  
+  const int paddle_width = 0.5;
   // If ball on right side!
   if (ball_x > (SCREEN_WIDTH_FLOAT / 2) &&
     
-    // If ball is between the paddle and end
-    ball_x >= (SCREEN_WIDTH_FLOAT - paddle_x - 1) && ball_x < (SCREEN_WIDTH_FLOAT - paddle_x + ball_x_velocity + 1) && 
+    // Checks if to the right of the paddle
+    ball_x >= (SCREEN_WIDTH_FLOAT - paddle_x - paddle_width) &&
+    // Checks if to the left of the paddle
+    ball_x =< (SCREEN_WIDTH_FLOAT - paddle_x + paddle_width) &&
 
     // if ball y is within paddle height
-    ball_y < (paddle2_y + paddle_middle_height + 0.5) && 
-    ball_y > (paddle2_y - paddle_middle_height - 0.5)
+    ball_y <= (paddle2_y + half_paddle) && 
+    ball_y >= (paddle2_y - half_paddle)
   ) {
     
     calculate_reflection_and_set_velocity(); //ball_x_velocity = -ball_x_velocity;
@@ -422,12 +424,14 @@ void set_new_velocity_on_paddle_collision() {
   // If ball on left side!
   } else if (ball_x < (SCREEN_WIDTH_FLOAT / 2) &&
 
-    // If ball is between the paddle and start
-    ball_x <= (paddle_x - 1) && ball_x > (paddle_x + ball_x_velocity - 1) && 
+    // Checks if to the left of the paddle
+    ball_x <= (paddle_x - paddle_width) && 
+    // Checks if to the right of the paddle
+    ball_x >= (paddle_x + paddle_width) && 
     
     // if ball y is within paddle height
-    ball_y < (paddle1_y + paddle_middle_height + 0.5) && 
-    ball_y > (paddle1_y - paddle_middle_height - 0.5)
+    ball_y <= (paddle1_y + half_paddle) && 
+    ball_y >= (paddle1_y - half_paddle)
   ){
     //ball_x_velocity = -ball_x_velocity;
     calculate_reflection_and_set_velocity();
@@ -1113,8 +1117,8 @@ void labinit( void )
   TRISE = 0; // lights are outputs
   PORTE = 0; // lights off for now
 
-  // T2
-  T2CON = 0b1000000001100000; // timer on with PRE 256
+  // T2              111   
+  T2CON = 0b1000000001000000; // timer on with PRE 16, see https://cdn.discordapp.com/attachments/876819453806010408/943170879490252810/unknown.png
   PR2 = 31250;  // (80M*10^6)/256/10
 
   // timing interrupts
