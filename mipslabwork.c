@@ -45,8 +45,9 @@ const SCREEN_HEIGHT_FLOAT = 31;
 #define INCREASING 2
 
 // Leaderboard array (only space for 3) 
-char leaderboard_names[3][3] = {"", "", ""};
-int leaderboard_scores[3] = {};
+const int array_size = 3; // size of leaderboard arrays
+char leaderboard_names[array_size][array_size] = {"", "", ""};
+int leaderboard_scores[array_size] = {};
 char selected_char = 'A'; // nr 65-90 is capital letters in ASCII 
 
 // game
@@ -692,6 +693,12 @@ void leaderboard() {
 int selected_char_position = 0;
 char name[3];
 
+// saves and sorts leaderboard
+void save_to_leaderboard() {
+
+}
+
+
 // player can write name to leaderboard after win
 void write_to_leaderboard() {
   current_screen = WRITE_LEADERBOARD;
@@ -712,20 +719,6 @@ void write_to_leaderboard() {
     display_string(2, "3. Right"); 
     display_string(3, "4. Left");
     display_update();
-  }
-}
-
-
-// saves and sorts leaderboard
-void save_to_leaderboard() {
-
-  // temporary names if need to sort leaderboard
-  char temporary_name[3];
-  int temporary_score = 0;
-
-  int i = 0;
-  for (i = 0; i < 3; i++) {
-    if (player1_points)
   }
 }
 
