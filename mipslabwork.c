@@ -45,9 +45,9 @@ const SCREEN_HEIGHT_FLOAT = 31;
 #define INCREASING 2
 
 // Leaderboard array (only space for 3) 
-const int array_size = 3; // size of leaderboard arrays
-char leaderboard_names[array_size][array_size] = {"", "", ""};
-int leaderboard_scores[array_size] = {};
+#define ARRAY_SIZE 3 // size of leaderboard arrays
+char leaderboard_names[ARRAY_SIZE][ARRAY_SIZE];
+int leaderboard_scores[ARRAY_SIZE] = {};
 char selected_char = 'A'; // nr 65-90 is capital letters in ASCII 
 
 // game
@@ -412,7 +412,7 @@ void set_new_velocity_on_paddle_collision() {
     // Checks if to the right of the paddle
     ball_x >= (SCREEN_WIDTH_FLOAT - paddle_x - paddle_width) &&
     // Checks if to the left of the paddle
-    ball_x =< (SCREEN_WIDTH_FLOAT - paddle_x + paddle_width) &&
+    ball_x <= (SCREEN_WIDTH_FLOAT - paddle_x + paddle_width) &&
 
     // if ball y is within paddle height
     ball_y <= (paddle2_y + half_paddle) && 
