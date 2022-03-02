@@ -33,7 +33,7 @@
 #define SCORE 's'
 #define RESULTS 'r'
 #define CREDITS 'c'
-#define WRITE_LEADERBOARD 'r'
+#define WRITE_LEADERBOARD 'b'
 
 // screen size definitions
 const SCREEN_WIDTH_FLOAT = 127;
@@ -47,15 +47,13 @@ const SCREEN_HEIGHT_FLOAT = 31;
 // Leaderboard array (only space for 3) 
 char leaderboard_names[3][3] = {"", "", ""};
 int leaderboard_scores[3] = {};
+char selected_char = 'A'; // nr 65-90 is capital letters in ASCII 
 
 // game
 const int rounds_to_win = 3; // rounds to win to win the whole game
 int player1_points = 0; // keeps track of total round wins for player1
 int player2_points = 0; // keeps track of total round wins for player2
 int is_singleplayer = 0; // if gamemode is in singleplayer or multilpayer
-
-// leaderboard
-char selected_char = 'A'; // nr 65-90 is capital letters in ASCII 
 
 // ai difficulty
 int difficulty = EASY;
@@ -77,6 +75,7 @@ const int delay_value_menu_inputs = 3;
 const float paddle_x = 7;
 const int paddle_height = 9; // This should always be an odd number, otherwise set_new_velocity_on_paddle_collision will fail.
 const int paddle_middle_height = 4; //(int) ((paddle_height-1) / 2); // 9 => 4
+
 // calculates half paddle
 const float half_paddle = 4.5; // paddle_middle_height + 0.5
 const float half_paddle_exp = 20.25; // 4.5²
@@ -626,6 +625,10 @@ void play() {
   display_string(2, "3. Back");
   display_string(3, "");
   display_update();
+
+  // reset points
+  player1_points = 0;
+  player2_points = 0;
 }
 
 
@@ -672,6 +675,8 @@ void leaderboard() {
 
 // player can write name to leaderboard after win
 void write_to_leaderboard() {
+  current_screen = WRITE_LEADERBOARD;
+
   display_string(0, ""); // namn
   display_string(1, ""); // bokstav 
   display_string(2, ""); 
@@ -679,13 +684,27 @@ void write_to_leaderboard() {
   display_update();
 }
 
+// if a new highscore has been achieved
+int got_highscore() {
+  int highscore = 0;
+  
+  int i = 0;
+  for (i = 0; i < 3; i++) {
+    if (player1_points > leaderboard_scores[i])
+    highscore = 1;
+  }
+  
+  return highscore;
+}
+
 
 // show current score in between points
 void score() {
   current_screen = SCORE;
   
-  // if a player has won
-  if (player1_points >= rounds_to_win || player2_points >= rounds_to_win) {
+  // if a player has won in multiplayer, go to results
+  if ((!is_singleplayer && (player1_points >= rounds_to_win || player2_points >= rounds_to_win)) 
+      || (is_singleplayer && player2_points > 0)) {
     current_screen = RESULTS;
   }
 
@@ -696,13 +715,21 @@ void score() {
     char p1p[] = "P1 =  "; 
     p1p[5] = int_to_char(player1_points);
 
-    // player2 points to char array
+    // player2 name
     char p2p[] = "P2 =  "; 
-    if (is_singleplayer) { // if it should say AI instead of P2
-      p2p[0] = 'A';
-      p2p[1] = 'I';
+
+    // clears player2 name if in singleplayer
+    if (is_singleplayer) {
+      int i = 0;
+      for (i = 0; i <= 3; i++) {
+        p2p[i] = ' ';
+      }
     }
-    p2p[5] = int_to_char(player2_points);
+
+    // adds P2 if in multiplayer
+    else {
+      p2p[5] = int_to_char(player2_points);
+    }
     
     // scoreboard
     display_string(0, p1p);
@@ -722,31 +749,42 @@ void score() {
 // shows which player won after a game
 void results () {
   current_screen = RESULTS;
-  
-  // player1 won game
-  if (player1_points >= rounds_to_win) {
-    display_string(0, "Player1 won!");
-  }
 
-  // player2 or AI won game
-  if (player2_points >= rounds_to_win) {
-    if (is_singleplayer) {
-      display_string(0, "AI won!");
+  // from singleplayer
+  if(is_singleplayer) {
+    char points[] = "P =  ";
+    points[5] = int_to_char(player1_points);
+
+    display_string(1, points);
+
+    if(got_highscore()) {
+      display_string(0, "NEW HIGHSCORE!");
+      display_string(2, "3. Submit");
     }
     else {
-      display_string(0, "Player2 won!");
+      display_string(0, "");
+      display_string(2, "");
     }
   }
-  
-  // go back
-  display_string(1, "");
-  display_string(2, "3. Back");
-  display_string(3, "");
-  display_update();
 
-  // reset points
-  player1_points = 0;
-  player2_points = 0;
+  // from multiplayer
+  else{
+
+    // player1 won game
+    if (player1_points >= rounds_to_win) {
+      display_string(0, "Player1 won!");
+    }
+
+    // player2 won game
+    else if (player2_points >= rounds_to_win) {    
+      display_string(0, "Player2 won!");
+    }
+    display_string(1, "");
+  }
+
+  // go back
+  display_string(3, "4. Menu");
+  display_update();
 }
 
 
@@ -869,8 +907,8 @@ void button3() {
     }
 
     // results
-    else if (current_screen == RESULTS) {
-      current_screen = PLAY;
+    else if (current_screen == RESULTS && got_highscore()) {
+      current_screen = WRITE_LEADERBOARD; 
     }
   }
 
@@ -891,8 +929,14 @@ void button4() {
 
   // if enough delay has passed for menu switching
   if((total_timeout - press_delay) > delay_value_menu_inputs) {
+
     // difficulty options
     if (current_screen == DIFFICULTY) {
+      current_screen = PLAY;
+    }
+
+    // results
+    else if (current_screen == RESULTS) {
       current_screen = PLAY;
     }
   }
