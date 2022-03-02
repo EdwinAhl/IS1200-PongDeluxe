@@ -101,10 +101,33 @@ int total_timeout = 0; // global timer
 int game_time = 0; // for singleplayer increasing difficulty
 int timeoutcount = 0; // used to keep track of number of time loops
 
+int exp(int number, int exp){
+  if (exp == 0) return 1;
 
+  int i = 1;
+  for (i; i < exp; i++){
+    number *= number;  
+  }
+  return number;
+}
 // converts an int to it's corresponding char
-char int_to_char(int i) { return '0' + i; }  
+char int_to_char(int i) { return '0' + i; }
 
+// returns reversed array of input number
+// e.g 1234 => "4321"
+// 23 => "32" 
+// THIS ONLY RETURNS 4 CHARS MAX, IN REVERSED ORDER.
+char* big_int_to_char_array(int number) {
+  static char return_value[4] = "";
+  int i = 1;
+  for (i; number > 0; i++) {
+    int last_digit = number % 10;
+    return_value[i-1] = int_to_char(last_digit);
+    number -= last_digit;
+    number /= 10;
+  }
+  return return_value;
+}
 
 // functions
 void update_ball_pos_on_velocity(); 
