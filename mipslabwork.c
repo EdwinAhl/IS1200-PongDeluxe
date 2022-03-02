@@ -101,15 +101,7 @@ int total_timeout = 0; // global timer
 int game_time = 0; // for singleplayer increasing difficulty
 int timeoutcount = 0; // used to keep track of number of time loops
 
-int exp(int number, int exp){
-  if (exp == 0) return 1;
 
-  int i = 1;
-  for (i; i < exp; i++){
-    number *= number;  
-  }
-  return number;
-}
 // converts an int to it's corresponding char
 char int_to_char(int i) { return '0' + i; }
 
@@ -696,16 +688,32 @@ void leaderboard() {
 }
 
 
+// player highscore name
+int selected_char_position = 0;
+char name[3];
+
 // player can write name to leaderboard after win
 void write_to_leaderboard() {
   current_screen = WRITE_LEADERBOARD;
+  
+  // if 3 chars, save
+  if (selected_char_position == 3) {
+    current_screen = MENU;
+    selected_char_position = 0;
+  }
 
-  display_string(0, ""); // namn
-  display_string(1, ""); // bokstav 
-  display_string(2, ""); 
-  display_string(3, "");
-  display_update();
+  // keep inputing
+  else {
+    name[selected_char_position] = selected_char;
+
+    display_string(0, name); // namn
+    display_string(1, "2. Select"); // bokstav 
+    display_string(2, "3. Right"); 
+    display_string(3, "4. Left");
+    display_update();
+  }
 }
+
 
 // if a new highscore has been achieved
 int got_highscore() {
@@ -783,6 +791,11 @@ void results () {
     if(got_highscore()) {
       display_string(0, "NEW HIGHSCORE!");
       display_string(2, "3. Submit");
+
+      // reset name
+      name[0] = ' ';
+      name[1] = ' ';
+      name[2] = ' ';
     }
     else {
       display_string(0, "");
@@ -882,6 +895,12 @@ void button2() {
     else if (current_screen == PLAY) {
       current_screen = MULTIPLAYER;
     }
+
+    // write leaderboard
+    else if (current_screen == WRITE_LEADERBOARD) {
+      selected_char_position++;
+      write_to_leaderboard(); // regen
+    }
   }
 
   // if enough delay has passed for gameplay input
@@ -933,6 +952,12 @@ void button3() {
     else if (current_screen == RESULTS && got_highscore()) {
       current_screen = WRITE_LEADERBOARD; 
     }
+
+    // write to leaderboard
+    else if ((current_screen == WRITE_LEADERBOARD) && (selected_char < 'Z')) {
+      selected_char++; // right
+      write_to_leaderboard(); // regenerates leaderboard
+    }
   }
 
   // if enough delay has passed for gameplay inputs
@@ -961,6 +986,12 @@ void button4() {
     // results
     else if (current_screen == RESULTS) {
       current_screen = PLAY;
+    }
+
+    // write to leaderboard
+    else if ((current_screen == WRITE_LEADERBOARD) && (selected_char > 'A')) {
+      selected_char--; // regenerates leaderboard
+      write_to_leaderboard(); // regenerates leaderboard
     }
   }
   // if enough delay has passed
