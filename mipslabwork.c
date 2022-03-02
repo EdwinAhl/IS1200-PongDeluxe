@@ -392,7 +392,7 @@ void calculate_reflection_and_set_velocity(){
 
   // These can be used but leads to unpredictable speeds
   float base_ball_x_velocity = -is_ball_left_multiplier * (base_reflection * normal_vector_x - reflection_vector_x);
-  float base_ball_y_velocity = is_ball_upper_multiplier * (base_reflection * normal_vector_y - reflection_vector_y);
+  float base_ball_y_velocity = -is_ball_upper_multiplier * (base_reflection * normal_vector_y - reflection_vector_y);
 
   // This is used to normalize the new velocity as to make it the same total speed
   float reflection_normal = sqrt(base_ball_x_velocity * base_ball_x_velocity + base_ball_y_velocity * base_ball_y_velocity);
@@ -532,7 +532,7 @@ void difficulty_init() {
   if (difficulty == EASY) {
     ai_reaction_pixels = 10;
     ai_centers = 0;
-    ai_paddle_y_velocity = 0.2;
+    ai_paddle_y_velocity = 0.15;
   }
 
   // hard
@@ -947,10 +947,8 @@ void button2() {
     // write leaderboard
     else if (current_screen == WRITE_LEADERBOARD) {
       selected_char_position++; 
-
-      if (selected_char_position <= 2) {
-        write_to_leaderboard(); // regen
-      }
+      write_to_leaderboard(); // regen
+      
     }
   }
 
