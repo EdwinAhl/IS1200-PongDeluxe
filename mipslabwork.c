@@ -523,6 +523,8 @@ void update_canvas() {
   AI
 *///////////////////////////////////////////////////////////////////////////////////////////////////
 
+float ai_paddle_y_velocity = 0.5;
+
 // initializes ai based on difficulty
 void difficulty_init() {
   
@@ -530,17 +532,20 @@ void difficulty_init() {
   if (difficulty == EASY) {
     ai_reaction_pixels = 10;
     ai_centers = 0;
+    ai_paddle_y_velocity = 0.2;
   }
 
   // hard
   else if (difficulty == HARD) {
     ai_reaction_pixels == 100;
     ai_centers = 1;
+    ai_paddle_y_velocity = 0.5;
   }
 
   // increasing difficulty
   else if (difficulty == INCREASING) {
     ai_reaction_pixels = 10;
+    ai_paddle_y_velocity = 0.3;
   }
 
   game_time = 0; // restarts game time
@@ -561,12 +566,12 @@ void ai_move() {
       
         // if ball is lower than paddle
         if(ball_y > paddle2_y) {
-          paddle2_y += paddle_y_velocity;
+          paddle2_y += ai_paddle_y_velocity;
         }
 
         // if ball is higher than paddle, lower it's height
         else if (ball_y < paddle2_y) {
-          paddle2_y -= paddle_y_velocity; 
+          paddle2_y -= ai_paddle_y_velocity; 
         }
       }
     }
@@ -580,12 +585,12 @@ void ai_move() {
 
       // over middle, decrease position
       if (paddle2_y > 15.5) {
-        paddle2_y -= paddle_y_velocity;
+        paddle2_y -= ai_paddle_y_velocity;
       }
 
       // under middle, increase position
       else if (paddle2_y < 15.5) {
-        paddle2_y += paddle_y_velocity;
+        paddle2_y += ai_paddle_y_velocity;
       }
     }
   }
@@ -603,13 +608,17 @@ void ai_update() {
   // increasing difficulty, adds reaction pixels can center over time
   else if (difficulty == INCREASING) {
 
-    // decreases reaction time with game time
-    if (ai_reaction_pixels > 40) {
+    // increases reaction time with game time to a limit
+    if (ai_reaction_pixels < 120) {
       ai_reaction_pixels += 1;
     }
 
+    if (ai_paddle_y_velocity < 2) {
+      ai_paddle_y_velocity += 0.01;
+    }
+
     // starts to center after a while
-    if (difficulty == INCREASING && (game_time > 10)) {
+    if (difficulty == INCREASING && (game_time > 100)) {
       ai_centers = 1;
     }
 
@@ -684,11 +693,10 @@ void multiplayer() {
 void leaderboard() {
   current_screen = LEADERBOARD; // in leaderboard
 
-  // TEMPORARY
-  display_string(0, "Leaderboard");
-  display_string(1, "3. Back");
-  display_string(2, "");
-  display_string(3, "");
+  display_string(0, leaderboard_names[0]);
+  display_string(1, leaderboard_names[1]);
+  display_string(2, leaderboard_names[2]);
+  display_string(3, "3. Back");
   display_update();
 }
 
@@ -738,9 +746,9 @@ void write_to_leaderboard() {
   
   // if 3 chars, save
   if (selected_char_position == 3) {
-    save_to_leaderboard();
-    current_screen = MENU;
-    selected_char_position = 0;
+    selected_char_position = 0; // resets char position for next highscore
+    save_to_leaderboard(); // saves score
+    current_screen = MENU; // goes back to menu
   }
 
   // keep inputing
@@ -938,8 +946,11 @@ void button2() {
 
     // write leaderboard
     else if (current_screen == WRITE_LEADERBOARD) {
-      selected_char_position++;
-      write_to_leaderboard(); // regen
+      selected_char_position++; 
+
+      if (selected_char_position <= 2) {
+        write_to_leaderboard(); // regen
+      }
     }
   }
 
