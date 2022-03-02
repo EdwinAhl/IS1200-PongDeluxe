@@ -47,7 +47,7 @@ const SCREEN_HEIGHT_FLOAT = 31;
 // Leaderboard array (only space for 3) 
 #define ARRAY_SIZE 3 // size of leaderboard arrays
 char leaderboard_names[ARRAY_SIZE+1][ARRAY_SIZE+1];
-int leaderboard_scores[ARRAY_SIZE] = {};
+int leaderboard_scores[ARRAY_SIZE] = {0, 0, 0};
 char selected_char = 'A'; // nr 65-90 is capital letters in ASCII 
 
 // game
@@ -121,6 +121,37 @@ char* big_int_to_char_array(int number) {
     number /= 10;
   }
   return return_value;
+}
+
+// returns an array with both name and number in it
+char* name_and_points_array(char* name, int points) {
+  static char return_value[8];
+  
+  char* points_array = big_int_to_char_array(points);
+
+  
+  // name
+  int i = 0; // position of name 
+  for (i; i<=2; i++) {
+    if (name[i] != '\0') {
+    return_value[i] = name[i]; // name
+    }
+    else {
+      return_value[i] = ' ';
+    }
+  }
+
+  // points
+  i = 3;
+  for(i; i<7; i++) {
+    if (points_array[6-i] != '\0')
+      return_value[i] = points_array[6-i];
+    else {
+      return_value[i] = ' ';
+    }
+  }
+  //return_value[0] = int_to_char(2);
+  return return_value; // return "name points"
 }
 
 // functions
@@ -533,12 +564,12 @@ void difficulty_init() {
   if (difficulty == EASY) {
     ai_reaction_pixels = 10;
     ai_centers = 0;
-    ai_paddle_y_velocity = 0.15;
+    ai_paddle_y_velocity = 0.015; // DEBUG: Should be 0.15
   }
 
   // hard
   else if (difficulty == HARD) {
-    ai_reaction_pixels == 80;
+    ai_reaction_pixels == 100;
     ai_centers = 1;
     ai_paddle_y_velocity = 0.5;
   }
@@ -694,9 +725,9 @@ void multiplayer() {
 void leaderboard() {
   current_screen = LEADERBOARD; // in leaderboard
 
-  display_string(0, leaderboard_names[0]);
-  display_string(1, leaderboard_names[1]);
-  display_string(2, leaderboard_names[2]);
+  display_string(0, name_and_points_array(leaderboard_names[0], leaderboard_scores[0]));
+  display_string(1, name_and_points_array(leaderboard_names[1], leaderboard_scores[1]));
+  display_string(2, name_and_points_array(leaderboard_names[2], leaderboard_scores[2]));
   display_string(3, "3. Back");
   display_update();
 }
@@ -723,7 +754,6 @@ void save_to_leaderboard() {
         leaderboard_names[i+1][1] = leaderboard_names[i][1];
         leaderboard_names[i+1][2] = leaderboard_names[i][2];
         leaderboard_names[i+1][3] = '\0';
-
     }
 
     // no need to check scores over if current is larger than players points, since leaderboard is sorted
