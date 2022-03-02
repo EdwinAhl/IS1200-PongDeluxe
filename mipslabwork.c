@@ -206,6 +206,23 @@ int ceil_custom(float input, float max) {
 }
 
 
+// Using the Babylonian method 
+// https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method
+float sqrt(float number){
+  float current_number = number / 2; // Start estimate close to the real root
+  const int iterations = 10; // loop 10 times
+  int i;
+  for (i = 0; i < iterations; i++){
+	  current_number = (current_number + number / current_number) / 2;
+  }
+  return current_number;
+}
+
+float abs(float number) {
+  return number < 0 ? -number : number;
+}
+
+
 // ball x,y starting value
 float ball_x_velocity = 1;
 float ball_y_velocity = 1;
@@ -235,22 +252,6 @@ int paddle_middle_height = 4; //(int) ((paddle_height-1) / 2); // 9 => 4
 // paddle 
 float paddle1_y = 15.5f;
 float paddle2_y = 15.5f;
-
-// Using the Babylonian method 
-// https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method
-float sqrt(float number){
-  float current_number = number / 2; // Start estimate close to the real root
-  const int iterations = 10; // loop 10 times
-  int i;
-  for (i = 0; i < iterations; i++){
-	  current_number = (current_number + number / current_number) / 2;
-  }
-  return current_number;
-}
-
-float abs(float number) {
-  return number < 0 ? -number : number;
-}
 
 
 // The elipsis is calculated with f(x), this function solves f'(x) for the elipsis.
