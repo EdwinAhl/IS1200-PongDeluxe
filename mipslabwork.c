@@ -49,6 +49,9 @@ int player1_points = 0; // keeps track of total round wins for player1
 int player2_points = 0; // keeps track of total round wins for player2
 int is_singleplayer = 0; // if gamemode is in singleplayer or multilpayer
 
+// leaderboard
+char selected_char = 'A'; // nr 65-90 is capital letters in ASCII 
+
 // ai difficulty
 int difficulty = EASY;
 int ai_reaction_pixels; // interval of pixels to ball ai reacts within
@@ -661,6 +664,16 @@ void leaderboard() {
   display_string(0, "Leaderboard");
   display_string(1, "3. Back");
   display_string(2, "");
+  display_string(3, "");
+  display_update();
+}
+
+
+// player can write name to leaderboard after win
+void write_to_leaderboard() {
+  display_string(0, ""); // namn
+  display_string(1, ""); // bokstav 
+  display_string(2, ""); 
   display_string(3, "");
   display_update();
 }
