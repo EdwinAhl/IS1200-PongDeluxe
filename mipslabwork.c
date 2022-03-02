@@ -486,6 +486,20 @@ display_paddle() {
 }
 
 
+// updates the screen when moving pixles
+void update_canvas() {
+  clear_display();
+  display_paddle();
+  display_ball();
+  display_image(display);
+}
+
+
+
+/*//////////////////////////////////////////////////////////////////////////////////////////////////
+  AI
+*///////////////////////////////////////////////////////////////////////////////////////////////////
+
 // initializes ai based on difficulty
 void difficulty_init() {
   
@@ -509,11 +523,6 @@ void difficulty_init() {
   game_time = 0; // restarts game time
 }
 
-
-
-/*//////////////////////////////////////////////////////////////////////////////////////////////////
-  AI
-*///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // moves ai witihin it's corresponding reaction time and relation to ball
 void ai_move() {
@@ -586,15 +595,6 @@ void ai_update() {
 
     ai_move();
   }
-}
-
-
-// updates the screen when moving pixles
-void update_canvas() {
-  clear_display();
-  display_paddle();
-  display_ball();
-  display_image(display);
 }
 
 
