@@ -46,7 +46,7 @@ const SCREEN_HEIGHT_FLOAT = 31;
 
 // Leaderboard array (only space for 3) 
 #define ARRAY_SIZE 3 // size of leaderboard arrays
-char leaderboard_names[ARRAY_SIZE][ARRAY_SIZE];
+char leaderboard_names[ARRAY_SIZE+1][ARRAY_SIZE+1];
 int leaderboard_scores[ARRAY_SIZE] = {};
 char selected_char = 'A'; // nr 65-90 is capital letters in ASCII 
 
@@ -704,7 +704,7 @@ void leaderboard() {
 
 // player highscore name
 int selected_char_position = 0;
-char name[3];
+char name[4];
 
 // saves and sorts leaderboard
 void save_to_leaderboard() {
@@ -722,6 +722,8 @@ void save_to_leaderboard() {
         leaderboard_names[i+1][0] = leaderboard_names[i][0];
         leaderboard_names[i+1][1] = leaderboard_names[i][1];
         leaderboard_names[i+1][2] = leaderboard_names[i][2];
+        leaderboard_names[i+1][3] = '\0';
+
     }
 
     // no need to check scores over if current is larger than players points, since leaderboard is sorted
@@ -736,6 +738,7 @@ void save_to_leaderboard() {
   leaderboard_names[i+1][0] = name[0];
   leaderboard_names[i+1][1] = name[1];
   leaderboard_names[i+1][2] = name[2];
+  leaderboard_names[i+1][3] = '\0';
 }
 
 // player can write name to leaderboard after win
