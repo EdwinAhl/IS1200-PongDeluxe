@@ -551,6 +551,8 @@ void ai_move() {
   }
 }
 
+float speedup = 1.001; // ball velocity speedup for increasing difficulty
+
 // updates AI inputs depending on where ball is, increase it's height 
 void ai_update() {
 
@@ -568,9 +570,12 @@ void ai_update() {
     }
 
     // starts to center after a while
-    if (difficulty == INCREASING && (game_time > 1)) {
+    if (difficulty == INCREASING && (game_time > 10)) {
       ai_centers = 1;
     }
+
+    ball_x_velocity *= speedup;
+    ball_y_velocity *= speedup;
 
     ai_move();
   }
