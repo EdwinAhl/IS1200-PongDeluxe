@@ -238,7 +238,7 @@ int ceil_custom(float input, float max) {
 // https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method
 float sqrt(float number){
   float current_number = number / 2; // Start estimate close to the real root
-  const int iterations = 10; // loop 10 times
+  const int iterations = 15; // loop 15 times
   int i;
   for (i = 0; i < iterations; i++){
 	  current_number = (current_number + number / current_number) / 2;
@@ -290,13 +290,7 @@ float abc_formula(float a, float b, float c, int lower){
 // sum = pos_y - slope * pos_x
 // f(x) = slope * x + sum
 // Solve for x
-float calculate_intercept_x(float slope, int is_ball_left){
-
-  // relative distance to paddle center
-  float paddle_y = is_ball_left ? paddle2_y : paddle1_y;
-  float distance_from_paddle_y = (paddle_y - ball_y);
-  float distance_from_paddle_x = is_ball_left ? -(SCREEN_WIDTH_FLOAT - paddle_x - ball_x) : ball_x - paddle_x;
-
+float calculate_intercept_x(float slope, int is_ball_left, float distance_from_paddle_x, float distance_from_paddle_y){
   // halft paddle
   float sum = distance_from_paddle_y - slope * distance_from_paddle_x;
 
@@ -310,7 +304,6 @@ float calculate_intercept_x(float slope, int is_ball_left){
   );
   return intercept_x;
 }
-
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////
   DISPLAY
@@ -398,22 +391,27 @@ void calculate_reflection_and_set_velocity(){
   // If the ball is left of the paddle. Eg if it's on the right side of the
   // screen it's left of the paddle, 5 ticks backwards.
   int is_ball_left = ball_x > SCREEN_WIDTH_FLOAT / 2;
+  int is_ball_left_multiplier = is_ball_left ? 1 : -1; // Positive to the left, negative to the right
+  float distance_from_paddle_x = is_ball_left ? -(SCREEN_WIDTH_FLOAT - paddle_x - ball_x) : ball_x - paddle_x;
+
   // If ball is on the upper side of the paddle.
   float current_paddle_y = is_ball_left ? paddle2_y : paddle1_y;
-  int is_ball_upper = (ball_y - ball_y_velocity * 5) < current_paddle_y;
+  float distance_from_paddle_y = (current_paddle_y - ball_y);
 
   // calculate slope and intercept
   float slope = -ball_y_velocity / ball_x_velocity;
-  float intercept_x = calculate_intercept_x(slope, is_ball_left);
+
+  // Relative values to the paddle.
+  float intercept_x = calculate_intercept_x(slope, is_ball_left, distance_from_paddle_x, distance_from_paddle_y);
+  float intercept_y = -(distance_from_paddle_y + (intercept_x - distance_from_paddle_x) * slope);
+  int is_ball_upper = intercept_y < 0;
+  
+  // --- Calculate the mirror with the normal and an incoming vector ---
+  float normal_vector_x = calculate_derivative(intercept_x);
 
   // used for other caluclations to get correct positive/negative value on coordinates for ball
   int is_ball_upper_multiplier = is_ball_upper ? 1 : -1; // Positive above, negative below
-  int is_ball_left_multiplier = is_ball_left ? 1 : -1; // Positive to the left, negative to the right
-
-  // --- Calculate the mirror with the normal and an incoming vector ---
-  float normal_vector_x = calculate_derivative(intercept_x);
   float normal_vector_y = is_ball_upper_multiplier;
-  //printf("intercept_x %f\n", intercept_x);
 
   // reflection vector
   float reflection_vector_x = 1;
@@ -426,6 +424,11 @@ void calculate_reflection_and_set_velocity(){
     // div ||v||²
     (normal_vector_x * normal_vector_x + normal_vector_y * normal_vector_y);
 
+  /*
+  printf("intercept_x %f\n", intercept_x);
+  printf("intercept_y %f\n", intercept_y);
+  printf("is_ball_upper %d\n", is_ball_upper);
+  */
 
   // These can be used but leads to unpredictable speeds
   float base_ball_x_velocity = -is_ball_left_multiplier * (base_reflection * normal_vector_x - reflection_vector_x);
