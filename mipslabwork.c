@@ -423,11 +423,10 @@ void set_new_velocity_on_paddle_collision() {
 
   // If ball on left side!
   } else if (ball_x < (SCREEN_WIDTH_FLOAT / 2) &&
-
-    // Checks if to the left of the paddle
-    ball_x <= (paddle_x - paddle_width) && 
     // Checks if to the right of the paddle
-    ball_x >= (paddle_x + paddle_width) && 
+    ball_x >= (paddle_x - paddle_width) && 
+    // Checks if to the left of the paddle
+    ball_x <= (paddle_x + paddle_width) && 
     
     // if ball y is within paddle height
     ball_y <= (paddle1_y + half_paddle) && 
