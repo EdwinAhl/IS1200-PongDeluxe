@@ -218,6 +218,12 @@ float ball_y = 0; // 0 <= y <= 31
 void center_ball() {
   ball_x = SCREEN_WIDTH_FLOAT / 2;
   ball_y = SCREEN_HEIGHT_FLOAT / 2;
+
+  // This is used to normalize the new velocity as to make it 1 again
+  float reflection_normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity);
+  // Favors x velocity. As a result this can increase the current velocity up to 1.5x.
+  ball_y_velocity = 0.5 * (ball_y_velocity / reflection_normal);
+  ball_x_velocity = 1.5 * (ball_x_velocity / reflection_normal);
 }
 
 // paddle values, 7 pixles from each side
@@ -363,9 +369,17 @@ void calculate_reflection_and_set_velocity(){
     // div ||v||²
     (normal_vector_x * normal_vector_x + normal_vector_y * normal_vector_y);
 
-  ball_x_velocity = -is_ball_left_multiplier * (base_reflection * normal_vector_x - reflection_vector_x);
-  ball_y_velocity = is_ball_upper_multiplier * (base_reflection * normal_vector_y - reflection_vector_y);
+  // These can be used but leads to unpredictable speeds
+  float base_ball_x_velocity = -is_ball_left_multiplier * (base_reflection * normal_vector_x - reflection_vector_x);
+  float base_ball_y_velocity = is_ball_upper_multiplier * (base_reflection * normal_vector_y - reflection_vector_y);
+
+  // This is used to normalize the new velocity as to make it the same total speed
+  float reflection_normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity);
+  ball_y_velocity = base_ball_y_velocity / reflection_normal;
+  ball_x_velocity = base_ball_x_velocity / reflection_normal;
 }
+
+
 
 void set_new_velocity_on_paddle_collision() {
   
