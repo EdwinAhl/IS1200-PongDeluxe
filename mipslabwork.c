@@ -709,22 +709,19 @@ char name[3];
 // saves and sorts leaderboard
 void save_to_leaderboard() {
 
-  int i = 0;
-  for (i = ARRAY_SIZE-1; i >= 0; i--) {
+  int i = ARRAY_SIZE - 1;
+  for (i; i >= 0; i--) {
 
     // if player points larger than current leaderboard positions score
     if (player2_points > leaderboard_scores[i]) {
       
-      // if not last, move down
-      if (i != ARRAY_SIZE-1) { 
-        
-        leaderboard_scores[i+1] = leaderboard_scores[i]; // previous score 
+        // previous score 
+        leaderboard_scores[i+1] = leaderboard_scores[i]; 
 
         // previous name char wise
         leaderboard_names[i+1][0] = leaderboard_names[i][0];
         leaderboard_names[i+1][1] = leaderboard_names[i][1];
         leaderboard_names[i+1][2] = leaderboard_names[i][2];
-      }
     }
 
     // no need to check scores over if current is larger than players points, since leaderboard is sorted
@@ -732,14 +729,13 @@ void save_to_leaderboard() {
       break;
     }
   }
-
   //current score 
-  leaderboard_scores[i] = player2_points;
+  leaderboard_scores[i+1] = player2_points;
 
   // current name
-  leaderboard_names[i][0] = leaderboard_names[i][0];
-  leaderboard_names[i][1] = leaderboard_names[i][1];
-  leaderboard_names[i][2] = leaderboard_names[i][2];
+  leaderboard_names[i+1][0] = name[0];
+  leaderboard_names[i+1][1] = name[1];
+  leaderboard_names[i+1][2] = name[2];
 }
 
 // player can write name to leaderboard after win
