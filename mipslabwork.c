@@ -53,6 +53,7 @@ int is_singleplayer = 0; // if gamemode is in singleplayer or multilpayer
 int difficulty = EASY;
 int ai_reaction_pixels; // interval of pixels to ball ai reacts within
 int ai_centers = 0;
+float speedup = 1.0001; // ball velocity speedup for increasing difficulty
 
 // screen
 char current_screen; // init current screen variable
@@ -63,19 +64,47 @@ int press_delay = 0; // delay for switching between options so same button isn't
 const int delay_value_game_inputs = 1; // how much to delay
 const int delay_value_menu_inputs = 3;
 
-char int_to_char(int i) { return '0' + i; } // converts an int to it's corresponding char 
+
+// paddle values, 7 pixles from each side
+const float paddle_x = 7;
+const int paddle_height = 9; // This should always be an odd number, otherwise set_new_velocity_on_paddle_collision will fail.
+int paddle_middle_height = 4; //(int) ((paddle_height-1) / 2); // 9 => 4
+
+// paddle 
+float paddle1_y = 15.5f;
+float paddle2_y = 15.5f;
+
+
+// ball x,y starting value
+float start_velocity = 1.5;
+float ball_x_velocity = 1;
+float ball_y_velocity = 1;
+
+// ball position
+float ball_x = 0; // 0 <= x <= 127
+float ball_y = 0; // 0 <= y <= 31
+
+
+// timers
+int total_timeout = 0; // global timer
+int game_time = 0; // for singleplayer increasing difficulty
+int timeoutcount = 0; // used to keep track of number of time loops
+
+
+// converts an int to it's corresponding char
+char int_to_char(int i) { return '0' + i; }  
+
+
+// functions
+void update_ball_pos_on_velocity(); 
+void update_canvas();
+void ai_update();
+
 
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////
   TIME
 *///////////////////////////////////////////////////////////////////////////////////////////////////
-
-int total_timeout = 0; // global timer
-int game_time = 0; // for singleplayer increasing difficulty
-int timeoutcount = 0; // used to keep track of number of time loops
-void update_ball_pos_on_velocity(); 
-void update_canvas();
-void ai_update();
 
 /* Interrupt Service Routine */
 void user_isr( void )
@@ -112,6 +141,119 @@ void user_isr( void )
     IFS(0) = IFS(0) & ~0b1000000000000000; // bit 15 resets INT3
     PORTE++; //increase 
   }
+}
+
+
+
+/*//////////////////////////////////////////////////////////////////////////////////////////////////
+  MATH
+*///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Caps the value fron the input based on start and end, used in display_ball to not overshoot the ball.
+float get_between(float input, int start, int end){
+  if (input > end){
+    return end;
+  } else if (input < start) {
+    return start;
+  } else return input;
+}
+
+
+// math floor and ceiling
+int floor_custom(float input) {
+  return (int) input;
+}
+
+// Same as math ceil, but doesnt round up above the max. E.g 6.0 => 6.0, 6.1 => 7.0, 
+int ceil_custom(float input, float max) {
+  if (max <= input + 1) return floor_custom(input);
+  return (int) (input + 1);
+}
+
+
+// Using the Babylonian method 
+// https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method
+float sqrt(float number){
+  float current_number = number / 2; // Start estimate close to the real root
+  const int iterations = 10; // loop 10 times
+  int i;
+  for (i = 0; i < iterations; i++){
+	  current_number = (current_number + number / current_number) / 2;
+  }
+  return current_number;
+}
+
+
+// gets absolute value of a float number
+float abs(float number) {
+  return number < 0 ? -number : number;
+}
+
+
+// The elipsis is calculated with f(x), this function solves f'(x) for the elipsis.
+// Used to calculate the reflection normal. 
+
+// Half of paddle_height = 4.5
+// f(x) = sqrt(4.5² - 4.5²x²)
+// f'(x) = ...
+float calculate_derivative(float intercept_x){
+  
+  // calculates half paddle
+  float half_paddle = paddle_middle_height + 0.5; // 4.5
+  float half_paddle_exp = half_paddle * half_paddle; // 4.5²
+
+  //
+  float derivative = (half_paddle_exp * intercept_x) / 
+    sqrt(-half_paddle_exp * intercept_x * intercept_x + half_paddle_exp);
+
+  return derivative;
+}
+
+// x² + px + q = 0
+// Solve for x
+// lower will give the smaller result if true
+float pq_formula(float p, float q, int lower){
+  float diff = sqrt(((p*p) / 4) - q);
+  float realdiff = lower ? -diff : diff;
+  return -(p / 2) + realdiff;
+}
+
+// ax² + bx + c = 0
+// Solve for x
+float abc_formula(float a, float b, float c, int lower){
+  float p = b/a;
+  float q = c/a;
+  return pq_formula(p, q, lower);
+}
+
+
+// This function calculates the relative x-coordinate the ball hits the epipsis at.
+// Used to calculate the derivative.
+
+// sum = pos_y - slope * pos_x
+// f(x) = slope * x + sum
+// Solve for x
+float calculate_intercept_x(float slope, int is_ball_left){
+
+  // relative distance to paddle center
+  float paddle_y = is_ball_left ? paddle2_y : paddle1_y;
+  float distance_from_paddle_y = -(paddle_y - ball_y);
+  float distance_from_paddle_x = is_ball_left ? -(SCREEN_WIDTH_FLOAT - paddle_x - ball_x) : ball_x - paddle_x;
+
+  // halft paddle
+  float half_paddle = paddle_middle_height + 0.5; // 4.5
+  float half_paddle_exp = half_paddle * half_paddle; // 4.5²
+  float sum = distance_from_paddle_y - slope * distance_from_paddle_x;
+
+  // Solve sqrt(4.5²-4.5²x²) = slope * x + sum
+  float intercept_x = 
+  abc_formula(
+    abs(half_paddle_exp + slope * slope),
+    2 * slope * sum,
+    sum * sum - half_paddle_exp,
+    is_ball_left
+  );
+  return intercept_x;
 }
 
 
@@ -183,55 +325,7 @@ void set_pixel(int x, int y) {
 }
 
 
-// Caps the value fron the input based on start and end.
-// Used in display_ball to not overshoot the ball.
-float get_between(float input, int start, int end){
-  if (input > end){
-    return end;
-  } else if (input < start) {
-    return start;
-  } else return input;
-}
-
-
-// math floor and ceiling
-int floor_custom(float input) {
-  return (int) input;
-}
-
-// Same as math ceil, but doesnt round up above the max. E.g 6.0 => 6.0, 6.1 => 7.0, 
-int ceil_custom(float input, float max) {
-  if (max <= input + 1) return floor_custom(input);
-  return (int) (input + 1);
-}
-
-
-// Using the Babylonian method 
-// https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method
-float sqrt(float number){
-  float current_number = number / 2; // Start estimate close to the real root
-  const int iterations = 10; // loop 10 times
-  int i;
-  for (i = 0; i < iterations; i++){
-	  current_number = (current_number + number / current_number) / 2;
-  }
-  return current_number;
-}
-
-float abs(float number) {
-  return number < 0 ? -number : number;
-}
-
-
-// ball x,y starting value
-float ball_x_velocity = 1;
-float ball_y_velocity = 1;
-
-
-// Middle value as start position
-float ball_x = 0; // 0 <= x <= 127
-float ball_y = 0; // 0 <= y <= 31
-
+// centers ball between rounds
 void center_ball() {
   ball_x = SCREEN_WIDTH_FLOAT / 2;
   ball_y = SCREEN_HEIGHT_FLOAT / 2;
@@ -239,105 +333,10 @@ void center_ball() {
   // This is used to normalize the new velocity as to make it 1 again
   float reflection_normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity);
   // Favors x velocity. As a result this can increase the current velocity up to 1.5x.
-  ball_y_velocity = 0.5 * (ball_y_velocity / reflection_normal);
-  ball_x_velocity = 1.5 * (ball_x_velocity / reflection_normal);
+  ball_y_velocity = start_velocity * (ball_y_velocity / reflection_normal);
+  ball_x_velocity = start_velocity * (ball_x_velocity / reflection_normal);
 }
 
-// paddle values, 7 pixles from each side
-const float paddle_x = 7;
-// This should always be an odd number, otherwise set_new_velocity_on_paddle_collision will fail.
-const int paddle_height = 9;
-int paddle_middle_height = 4; //(int) ((paddle_height-1) / 2); // 9 => 4
-
-// paddle 
-float paddle1_y = 15.5f;
-float paddle2_y = 15.5f;
-
-
-// The elipsis is calculated with f(x), this function solves f'(x) for the elipsis.
-// Used to calculate the reflection normal. 
-
-// Half of paddle_height = 4.5
-// f(x) = sqrt(4.5² - 4.5²x²)
-// f'(x) = ...
-float calculate_derivative(float intercept_x){
-  // 4.5
-  float half_paddle = paddle_middle_height + 0.5;
-  // 4.5²
-  float half_paddle_exp = half_paddle * half_paddle;
-
-  float derivative = (half_paddle_exp * intercept_x) / 
-    sqrt(-half_paddle_exp * intercept_x * intercept_x + half_paddle_exp);
-
-  return derivative;
-}
-
-// x² + px + q = 0
-// Solve for x
-// lower will give the smaller result if true
-float pq_formula(float p, float q, int lower){
-  float diff = sqrt(((p*p) / 4) - q);
-  float realdiff = lower ? -diff : diff;
-  return -(p / 2) + realdiff;
-}
-
-// ax² + bx + c = 0
-// Solve for x
-float abc_formula(float a, float b, float c, int lower){
-  float p = b/a;
-  float q = c/a;
-  return pq_formula(p, q, lower);
-}
-
-/*
-float calculate_elipsis(float x){
-  // 4.5
-  float half_paddle = paddle_middle_height + 0.5;
-  // 4.5²
-  float half_paddle_exp = half_paddle * half_paddle;
-
-  return sqrt(half_paddle_exp - half_paddle_exp * x * x)
-}
-*/
-
-// This function calculates the relative x-coordinate the ball hits the epipsis at.
-// Used to calculate the derivative.
-
-// sum = pos_y - slope * pos_x
-// f(x) = slope * x + sum
-// Solve for x
-float calculate_intercept_x(float slope, int is_ball_left){
-  float paddle_y = is_ball_left ? paddle2_y : paddle1_y;
-  float distance_from_paddle_y = -(paddle_y - ball_y);
-  float distance_from_paddle_x = is_ball_left ? -(SCREEN_WIDTH_FLOAT - paddle_x - ball_x) : ball_x - paddle_x;
-  
-  // Negative is below:
-
-  // 4.5
-  float half_paddle = paddle_middle_height + 0.5;
-  // 4.5²
-  float half_paddle_exp = half_paddle * half_paddle;
-  float sum = distance_from_paddle_y - slope * distance_from_paddle_x;
-
-  // Solve sqrt(4.5²-4.5²x²) = slope * x + sum
-  float intercept_x = 
-  abc_formula(
-    abs(half_paddle_exp + slope * slope),
-    2 * slope * sum,
-    sum * sum - half_paddle_exp,
-    is_ball_left
-  );
-
-/*
-  printf("distance_from_paddle_y: %f\n", distance_from_paddle_y);
-  printf("distance_from_paddle_x: %f\n", distance_from_paddle_x);
-  printf("sum: %f\n", sum);
-  printf("is_ball_left: %d\n", is_ball_left);
-  printf("intercept_x: %f\n", intercept_x);
-*/
-
-  return intercept_x;
-}
 
 // This sets the new mirrored velocity based on 
 void calculate_reflection_and_set_velocity(){
@@ -348,20 +347,21 @@ void calculate_reflection_and_set_velocity(){
   // If ball is on the upper side of the paddle.
   int is_ball_upper = ball_y < SCREEN_HEIGHT_FLOAT / 2;
 
+  // calculate slope and intercept
   float slope = -ball_y_velocity / ball_x_velocity;
   float intercept_x = calculate_intercept_x(slope, is_ball_left);
 
-  // Positive above, negative below
-  int is_ball_upper_multiplier = is_ball_upper ? 1 : -1;
-  // Positive to the left, negative to the right
-  int is_ball_left_multiplier = is_ball_left ? 1 : -1;
+  // used for other caluclations to get correct positive/negative value on coordinates for ball
+  int is_ball_upper_multiplier = is_ball_upper ? 1 : -1; // Positive above, negative below
+  int is_ball_left_multiplier = is_ball_left ? 1 : -1; // Positive to the left, negative to the right
 
   // --- Calculate the mirror with the normal and an incoming vector ---
   float normal_vector_x = calculate_derivative(intercept_x);
   float normal_vector_y = -is_ball_upper_multiplier;
 
+  // reflection vector
   float reflection_vector_x = 1;
-  float reflection_vector_y = slope;
+  float reflection_vector_y = slope; // slope is velocity angle 
 
   // reflection = 𝟐𝒑𝒓𝒐𝒋_𝒗⃗⃗⃗(𝒖⃗⃗⃗) − 𝒖
   float base_reflection = 2 * 
@@ -376,14 +376,15 @@ void calculate_reflection_and_set_velocity(){
 
   // This is used to normalize the new velocity as to make it the same total speed
   float reflection_normal = sqrt(base_ball_x_velocity * base_ball_x_velocity + base_ball_y_velocity * base_ball_y_velocity);
-  float current_normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity)
+  float current_normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity);
 
+  // changes ball velocity based on reflection
   ball_y_velocity = (base_ball_y_velocity / reflection_normal) * current_normal;
   ball_x_velocity = (base_ball_x_velocity / reflection_normal) * current_normal;
 }
 
 
-
+// sets new veclocity based on where ball hit the paddle
 void set_new_velocity_on_paddle_collision() {
   
   // If ball on right side!
@@ -396,10 +397,12 @@ void set_new_velocity_on_paddle_collision() {
     ball_y < (paddle2_y + paddle_middle_height + 0.5) && 
     ball_y > (paddle2_y - paddle_middle_height - 0.5)
   ) {
-    //ball_x_velocity = -ball_x_velocity;
-    calculate_reflection_and_set_velocity();
+    
+    calculate_reflection_and_set_velocity(); //ball_x_velocity = -ball_x_velocity;
+
   // If ball on left side!
   } else if (ball_x < (SCREEN_WIDTH_FLOAT / 2) &&
+
     // If ball is between the paddle and start
     ball_x <= paddle_x && ball_x > (paddle_x + ball_x_velocity - 1) && 
     
@@ -425,7 +428,7 @@ void set_new_velocity_on_edge() {
       player2_points++;
     }
 
-    current_screen = SCORE;
+    current_screen = SCORE; // goes to score if ball hits one of the edges
   }
   // If the ball is outside the screen y-wise it'll invert upwards velocity, e.g bounce.
   if (ball_y > SCREEN_HEIGHT_FLOAT || ball_y < 0){
@@ -433,7 +436,8 @@ void set_new_velocity_on_edge() {
   }
 }
 
-// Might need shorter name but this is good enough for now.
+
+// adds ball velocity to it's position
 void update_ball_pos_on_velocity() {
   ball_x += ball_x_velocity;
   ball_y += ball_y_velocity;
@@ -443,23 +447,19 @@ void update_ball_pos_on_velocity() {
 // creates the ball and displays it based on it's position
 void display_ball() {
 
+  // changes velocity if it hits paddle or edge
   set_new_velocity_on_paddle_collision();
   set_new_velocity_on_edge();  // Sets the new velocity, important that it's called before get_between.
+  
   // Makes sure the ball is within the screen.
   ball_x = get_between(ball_x, 0, SCREEN_WIDTH_FLOAT);
   ball_y = get_between(ball_y, 0, SCREEN_HEIGHT_FLOAT);
 
-  // clear_display(); // reset screen, //TODO PLACE SOMEWHERE ELSE
-
   // Creates 4 pixels for the ball based on the center point.
   set_pixel(floor_custom(ball_x), floor_custom(ball_y));
   set_pixel(floor_custom(ball_x), ceil_custom(ball_y, SCREEN_HEIGHT_FLOAT));
-
   set_pixel(ceil_custom(ball_x, SCREEN_WIDTH_FLOAT), ceil_custom(ball_y, SCREEN_HEIGHT_FLOAT));
   set_pixel(ceil_custom(ball_x, SCREEN_WIDTH_FLOAT), floor_custom(ball_y));
-
-  //last_display_ball = totaltimeout;
-  // display_image(display); //TODO PLACE SOMEWHERE ELSE
 }
 
 
@@ -503,11 +503,12 @@ void difficulty_init() {
 
   // increasing difficulty
   else if (difficulty == INCREASING) {
-    ai_reaction_pixels = 40;
+    ai_reaction_pixels = 10;
   }
 
   game_time = 0; // restarts game time
 }
+
 
 // moves ai witihin it's corresponding reaction time and relation to ball
 void ai_move() {
@@ -553,7 +554,6 @@ void ai_move() {
   }
 }
 
-float speedup = 1.001; // ball velocity speedup for increasing difficulty
 
 // updates AI inputs depending on where ball is, increase it's height 
 void ai_update() {
@@ -669,6 +669,8 @@ void score() {
   if (player1_points >= rounds_to_win || player2_points >= rounds_to_win) {
     current_screen = RESULTS;
   }
+
+  // if no player has won
   else {
 
     // player1 points to char array
