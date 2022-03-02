@@ -60,7 +60,7 @@ int is_singleplayer = 0; // if gamemode is in singleplayer or multilpayer
 int difficulty = EASY;
 int ai_reaction_pixels; // interval of pixels to ball ai reacts within
 int ai_centers = 0;
-float speedup = 1.0001; // ball velocity speedup for increasing difficulty
+float speedup = 1.001; // ball velocity speedup for increasing difficulty
 
 // screen
 char current_screen; // init current screen variable
@@ -538,7 +538,7 @@ void difficulty_init() {
 
   // hard
   else if (difficulty == HARD) {
-    ai_reaction_pixels == 100;
+    ai_reaction_pixels == 80;
     ai_centers = 1;
     ai_paddle_y_velocity = 0.5;
   }
@@ -610,12 +610,12 @@ void ai_update() {
   else if (difficulty == INCREASING) {
 
     // increases reaction time with game time to a limit
-    if (ai_reaction_pixels < 120) {
-      ai_reaction_pixels += 1;
+    if (ai_reaction_pixels < 100) {
+      ai_reaction_pixels += 0.01;
     }
 
     if (ai_paddle_y_velocity < 2) {
-      ai_paddle_y_velocity += 0.01;
+      ai_paddle_y_velocity *= 1.001;
     }
 
     // starts to center after a while
