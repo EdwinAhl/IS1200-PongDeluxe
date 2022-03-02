@@ -702,6 +702,7 @@ void write_to_leaderboard() {
   
   // if 3 chars, save
   if (selected_char_position == 3) {
+    save_to_leaderboard();
     current_screen = MENU;
     selected_char_position = 0;
   }
@@ -715,6 +716,20 @@ void write_to_leaderboard() {
     display_string(2, "3. Right"); 
     display_string(3, "4. Left");
     display_update();
+  }
+}
+
+
+// saves and sorts leaderboard
+void save_to_leaderboard() {
+
+  // temporary names if need to sort leaderboard
+  char temporary_name[3];
+  int temporary_score = 0;
+
+  int i = 0;
+  for (i = 0; i < 3; i++) {
+    if (player1_points)
   }
 }
 
