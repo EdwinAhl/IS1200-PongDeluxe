@@ -405,7 +405,7 @@ void calculate_reflection_and_set_velocity(){
 
 // sets new veclocity based on where ball hit the paddle
 void set_new_velocity_on_paddle_collision() {
-  const int paddle_width = 0.5;
+  const int paddle_width = 1;
   // If ball on right side!
   if (ball_x > (SCREEN_WIDTH_FLOAT / 2) &&
     
@@ -699,8 +699,18 @@ char name[3];
 // saves and sorts leaderboard
 void save_to_leaderboard() {
 
+  int i = 0;
+  for (i = 0; i < ARRAY_SIZE; i++) {
+    if (player2_points > leaderboard_scores[i]) {
+      if (i < ARRAY_SIZE-1) {
+        leaderboard_scores[i-1] = leaderboard_scores[i];
+        leaderboard_names[i-1] = leaderboard_names[i]
+      }
+      leaderboard_scores[i] = player2_points;
+      continue; 
+    }
+  }
 }
-
 
 // player can write name to leaderboard after win
 void write_to_leaderboard() {
@@ -724,7 +734,6 @@ void write_to_leaderboard() {
     display_update();
   }
 }
-
 
 // if a new highscore has been achieved
 int got_highscore() {
