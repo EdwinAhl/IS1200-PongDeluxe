@@ -365,7 +365,8 @@ void calculate_reflection_and_set_velocity(){
   // screen it's left of the paddle, 5 ticks backwards.
   int is_ball_left = (ball_x - ball_x_velocity * 5) > SCREEN_WIDTH_FLOAT / 2;
   // If ball is on the upper side of the paddle.
-  int is_ball_upper = (ball_y - ball_y_velocity * 5) < SCREEN_HEIGHT_FLOAT / 2;
+  float current_paddle_y = is_ball_left ? paddle2_y : paddle1_y;
+  int is_ball_upper = (ball_y - ball_y_velocity * 5) < current_paddle_y;
 
   // calculate slope and intercept
   float slope = -ball_y_velocity / ball_x_velocity;
