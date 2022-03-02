@@ -33,15 +33,20 @@
 #define SCORE 's'
 #define RESULTS 'r'
 #define CREDITS 'c'
+#define WRITE_LEADERBOARD 'r'
 
 // screen size definitions
-#define SCREEN_WIDTH_FLOAT 127
-#define SCREEN_HEIGHT_FLOAT 31
+const SCREEN_WIDTH_FLOAT = 127;
+const SCREEN_HEIGHT_FLOAT = 31;
 
 // difficulty definitions
 #define EASY 0
 #define HARD 1
 #define INCREASING 2
+
+// Leaderboard array (only space for 3) 
+char leaderboard_names[3][3] = {"", "", ""};
+int leaderboard_scores[3] = {};
 
 // game
 const int rounds_to_win = 3; // rounds to win to win the whole game
@@ -68,7 +73,11 @@ const int delay_value_menu_inputs = 3;
 // paddle values, 7 pixles from each side
 const float paddle_x = 7;
 const int paddle_height = 9; // This should always be an odd number, otherwise set_new_velocity_on_paddle_collision will fail.
-int paddle_middle_height = 4; //(int) ((paddle_height-1) / 2); // 9 => 4
+const int paddle_middle_height = 4; //(int) ((paddle_height-1) / 2); // 9 => 4
+// calculates half paddle
+const float half_paddle = 4.5; // paddle_middle_height + 0.5
+const float half_paddle_exp = 20.25; // 4.5²
+
 
 // paddle 
 float paddle1_y = 15.5f;
@@ -197,12 +206,6 @@ float abs(float number) {
 // f(x) = sqrt(4.5² - 4.5²x²)
 // f'(x) = ...
 float calculate_derivative(float intercept_x){
-  
-  // calculates half paddle
-  float half_paddle = paddle_middle_height + 0.5; // 4.5
-  float half_paddle_exp = half_paddle * half_paddle; // 4.5²
-
-  //
   float derivative = (half_paddle_exp * intercept_x) / 
     sqrt(-half_paddle_exp * intercept_x * intercept_x + half_paddle_exp);
 
@@ -241,8 +244,6 @@ float calculate_intercept_x(float slope, int is_ball_left){
   float distance_from_paddle_x = is_ball_left ? -(SCREEN_WIDTH_FLOAT - paddle_x - ball_x) : ball_x - paddle_x;
 
   // halft paddle
-  float half_paddle = paddle_middle_height + 0.5; // 4.5
-  float half_paddle_exp = half_paddle * half_paddle; // 4.5²
   float sum = distance_from_paddle_y - slope * distance_from_paddle_x;
 
   // Solve sqrt(4.5²-4.5²x²) = slope * x + sum
