@@ -67,9 +67,10 @@ char current_screen; // init current screen variable
 char old_screen; // used to determine if user has switched screen
 
 // delay
-int press_delay = 0; // delay for switching between options so same button isn't pressed immediately
-const int delay_value_game_inputs = 1; // how much to delay
-const int delay_value_menu_inputs = 3;
+const float paddle_y_velocity = 0.5; 
+int press_delay = 0; // time when last input
+const int delay_value_game_inputs = 1; // how much to delay game inputs
+const int delay_value_menu_inputs = 3; // how muhc to delay menu inputs
 
 
 // paddle values, 7 pixles from each side
@@ -560,12 +561,12 @@ void ai_move() {
       
         // if ball is lower than paddle
         if(ball_y > paddle2_y) {
-          paddle2_y++;
+          paddle2_y += paddle_y_velocity;
         }
 
         // if ball is higher than paddle, lower it's height
         else if (ball_y < paddle2_y) {
-          paddle2_y--; 
+          paddle2_y -= paddle_y_velocity; 
         }
       }
     }
@@ -579,12 +580,12 @@ void ai_move() {
 
       // over middle, decrease position
       if (paddle2_y > 15.5) {
-        paddle2_y--;
+        paddle2_y -= paddle_y_velocity;
       }
 
       // under middle, increase position
       else if (paddle2_y < 15.5) {
-        paddle2_y++;
+        paddle2_y += paddle_y_velocity;
       }
     }
   }
@@ -906,7 +907,7 @@ void button1() {
 
     // multiplayer
     if (current_screen == MULTIPLAYER) {
-      paddle2_y--;
+      paddle2_y -= paddle_y_velocity;
     }
 
     press_delay = total_timeout; // reset optionsdelay to present totaltimeout
@@ -947,7 +948,7 @@ void button2() {
 
     // multiplayer
     if (current_screen == MULTIPLAYER) {
-      paddle2_y++;
+      paddle2_y += paddle_y_velocity;
     }
 
     press_delay = total_timeout; // reset optionsdelay to present totaltimeout
@@ -1003,7 +1004,7 @@ void button3() {
   if (total_timeout - press_delay > delay_value_game_inputs) {
     // game
     if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) {
-      paddle1_y--;
+      paddle1_y -= paddle_y_velocity;
     }
     
     press_delay = total_timeout; // reset optionsdelay to present totaltimeout
@@ -1038,7 +1039,7 @@ void button4() {
 
     // game
     if (current_screen == SINGLEPLAYER || current_screen == MULTIPLAYER) {
-      paddle1_y++;
+      paddle1_y += paddle_y_velocity;
     }
     
     press_delay = total_timeout; // reset optionsdelay to present totaltimeout
