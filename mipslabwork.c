@@ -369,10 +369,10 @@ void center_ball() {
 void calculate_reflection_and_set_velocity(){
 
   // If the ball is left of the paddle. Eg if it's on the right side of the
-  // screen it's left of the paddle
-  int is_ball_left = ball_x > SCREEN_WIDTH_FLOAT / 2;
+  // screen it's left of the paddle, one tick backwards.
+  int is_ball_left = (ball_x - ball_x_velocity) > SCREEN_WIDTH_FLOAT / 2;
   // If ball is on the upper side of the paddle.
-  int is_ball_upper = ball_y < SCREEN_HEIGHT_FLOAT / 2;
+  int is_ball_upper = (ball_y - ball_y_velocity) < SCREEN_HEIGHT_FLOAT / 2;
 
   // calculate slope and intercept
   float slope = -ball_y_velocity / ball_x_velocity;
@@ -418,7 +418,7 @@ void set_new_velocity_on_paddle_collision() {
   if (ball_x > (SCREEN_WIDTH_FLOAT / 2) &&
     
     // If ball is between the paddle and end
-    ball_x >= (SCREEN_WIDTH_FLOAT - paddle_x) && ball_x < (SCREEN_WIDTH_FLOAT - paddle_x + ball_x_velocity + 1) && 
+    ball_x >= (SCREEN_WIDTH_FLOAT - paddle_x - 1) && ball_x < (SCREEN_WIDTH_FLOAT - paddle_x + ball_x_velocity + 1) && 
 
     // if ball y is within paddle height
     ball_y < (paddle2_y + paddle_middle_height + 0.5) && 
@@ -431,7 +431,7 @@ void set_new_velocity_on_paddle_collision() {
   } else if (ball_x < (SCREEN_WIDTH_FLOAT / 2) &&
 
     // If ball is between the paddle and start
-    ball_x <= paddle_x && ball_x > (paddle_x + ball_x_velocity - 1) && 
+    ball_x <= (paddle_x - 1) && ball_x > (paddle_x + ball_x_velocity - 1) && 
     
     // if ball y is within paddle height
     ball_y < (paddle1_y + paddle_middle_height + 0.5) && 
