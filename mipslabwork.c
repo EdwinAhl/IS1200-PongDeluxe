@@ -375,9 +375,11 @@ void calculate_reflection_and_set_velocity(){
   float base_ball_y_velocity = is_ball_upper_multiplier * (base_reflection * normal_vector_y - reflection_vector_y);
 
   // This is used to normalize the new velocity as to make it the same total speed
-  float reflection_normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity);
-  ball_y_velocity = base_ball_y_velocity / reflection_normal;
-  ball_x_velocity = base_ball_x_velocity / reflection_normal;
+  float reflection_normal = sqrt(base_ball_x_velocity * base_ball_x_velocity + base_ball_y_velocity * base_ball_y_velocity);
+  float current_normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity)
+
+  ball_y_velocity = (base_ball_y_velocity / reflection_normal) * current_normal;
+  ball_x_velocity = (base_ball_x_velocity / reflection_normal) * current_normal;
 }
 
 
