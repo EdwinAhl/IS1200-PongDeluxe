@@ -112,8 +112,12 @@ char int_to_char(int i) { return '0' + i; }
 // 23 => "32" 
 // THIS ONLY RETURNS 4 CHARS MAX, IN REVERSED ORDER.
 char* big_int_to_char_array(int number) {
-  static char return_value[4] = "";
+  static char return_value[4] = "    ";
   int i = 1;
+  int j = 0;
+  for (j; j<4; j++) {
+    return_value[j] = ' '; 
+  }
   for (i; number > 0; i++) {
     int last_digit = number % 10;
     return_value[i-1] = int_to_char(last_digit);
