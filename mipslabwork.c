@@ -252,6 +252,12 @@ float abs(float number) {
   return number < 0 ? -number : number;
 }
 
+float max_of(float a, float b) {
+  return a < b ? b : a; 
+}
+float min_of(float a, float b) {
+  return a > b ? b : a; 
+}
 
 // The elipsis is calculated with f(x), this function solves f'(x) for the elipsis.
 // Used to calculate the reflection normal. 
@@ -376,6 +382,10 @@ void set_pixel(int x, int y) {
 void center_ball() {
   ball_x = SCREEN_WIDTH_FLOAT / 2;
   ball_y = SCREEN_HEIGHT_FLOAT / 2;
+
+  // prevent zeroing any velocity, might cause calculation issues
+  ball_x_velocity = ball_x_velocity >= 0 ? max_of(0.05, ball_x_velocity) : min_of(-0.05, ball_x_velocity);
+  ball_x_velocity = ball_y_velocity >= 0 ? max_of(0.05, ball_y_velocity) : min_of(-0.05, ball_y_velocity);
 
   // This is used to normalize the new velocity as to make it 1 again
   float base_velocity = sqrt(2 * start_velocity * start_velocity);
