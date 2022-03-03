@@ -388,8 +388,8 @@ void center_ball() {
   int y_multiplier = ball_y_velocity < 0 ? -1 : 1;
 
   if (abs(ball_y_velocity) > abs(ball_x_velocity)) {
-    ball_x_velocity = x_multiplier * ball_y_velocity; // * speed_multiplier;
-    ball_y_velocity = y_multiplier * tmp_x_vel; //* speed_multiplier;
+    ball_x_velocity = ball_y_velocity; // * speed_multiplier;
+    ball_y_velocity = tmp_x_vel; //* speed_multiplier;
   }
 }
 
