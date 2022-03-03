@@ -58,7 +58,7 @@ int is_singleplayer = 0; // if gamemode is in singleplayer or multilpayer
 
 // ai difficulty
 int difficulty = EASY;
-int ai_reaction_pixels; // interval of pixels to ball ai reacts within
+int ai_reaction_pixels = 23; // interval of pixels to ball ai reacts within
 int ai_centers = 0;     // if the AI is allowed to recenter for a defensive position
 float speedup = 1.0002; // ball velocity speedup for increasing difficulty
 
@@ -583,24 +583,25 @@ float ai_paddle_y_velocity = 0.5;
 // initializes ai based on difficulty
 void difficulty_init() {
   
-  // easy
+  // easy difficulty
   if (difficulty == EASY) {
     ai_reaction_pixels = 15;
+    ai_paddle_y_velocity = 0.2; 
     ai_centers = 0;
-    ai_paddle_y_velocity = 0.2; // DEBUG: Should be 0.15
   }
 
-  // hard
+  // hard difficulty
   else if (difficulty == HARD) {
-    ai_reaction_pixels == 30;
-    ai_centers = 1;
+    ai_reaction_pixels == 24;
     ai_paddle_y_velocity = 0.5;
+    ai_centers = 1;
   }
 
   // increasing difficulty
   else if (difficulty == INCREASING) {
     ai_reaction_pixels = 15;
     ai_paddle_y_velocity = 0.2;
+    ai_centers = 0;
   }
 
   game_time = 0; // restarts game time
@@ -733,8 +734,8 @@ void difficulty_options() {
 void singleplayer() {
   current_screen = SINGLEPLAYER; // in singleplayer
   is_singleplayer = 1;
-  center_ball(); // ??
   difficulty_init(); // initialize the selected difficulty
+  center_ball(); // ??
 }
 
 
