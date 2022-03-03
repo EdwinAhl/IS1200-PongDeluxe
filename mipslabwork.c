@@ -376,6 +376,8 @@ void set_pixel(int x, int y) {
 void center_ball() {
   ball_x = SCREEN_WIDTH_FLOAT / 2;
   ball_y = SCREEN_HEIGHT_FLOAT / 2;
+  ball_x_velocity = start_velocity;
+  ball_y_velocity = start_velocity;
 
   // This is used to normalize the new velocity as to make it 1 again
   // float base_velocity = sqrt(2 * (start_velocity * start_velocity));
