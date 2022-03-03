@@ -376,24 +376,26 @@ void set_pixel(int x, int y) {
 void center_ball() {
   ball_x = SCREEN_WIDTH_FLOAT / 2;
   ball_y = SCREEN_HEIGHT_FLOAT / 2;
-  ball_x_velocity = start_velocity;
-  ball_y_velocity = start_velocity;
 
   // This is used to normalize the new velocity as to make it 1 again
-  // float base_velocity = sqrt(2 * (start_velocity * start_velocity));
-  // float normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity);
-  // float speed_multiplier = base_velocity / normal;
+  float base_velocity = sqrt(2 * start_velocity * start_velocity);
+  float normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity);
+  float speed_multiplier = base_velocity / normal;
 
-  // Favors x velocity.
-  /*
-  float tmp_x_vel = ball_x_velocity;
-  int x_multiplier = tmp_x_vel < 0 ? -1 : 1;
-  int y_multiplier = ball_y_velocity < 0 ? -1 : 1;
-
+  // Switch direction if y is prevalent
   if (abs(ball_y_velocity) > abs(ball_x_velocity)) {
-    ball_x_velocity = ball_y_velocity; // * speed_multiplier;
-    ball_y_velocity = tmp_x_vel; //* speed_multiplier;
-  }*/
+    // Favors x velocity.
+    float tmp_x_vel = ball_x_velocity;
+
+    float x_multiplier = tmp_x_vel < 0 ? -1 : 1;
+    float y_multiplier = ball_y_velocity < 0 ? -1 : 1;
+
+    ball_x_velocity = x_multiplier * ball_y_velocity * speed_multiplier;
+    ball_y_velocity = y_multiplier * tmp_x_vel * speed_multiplier;
+  } else {
+    ball_x_velocity *= speed_multiplier;
+    ball_y_velocity *= speed_multiplier;
+  }
 }
 
 
