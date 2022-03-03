@@ -383,6 +383,7 @@ void center_ball() {
   // float speed_multiplier = base_velocity / normal;
 
   // Favors x velocity.
+  /*
   float tmp_x_vel = ball_x_velocity;
   int x_multiplier = tmp_x_vel < 0 ? -1 : 1;
   int y_multiplier = ball_y_velocity < 0 ? -1 : 1;
@@ -390,7 +391,7 @@ void center_ball() {
   if (abs(ball_y_velocity) > abs(ball_x_velocity)) {
     ball_x_velocity = ball_y_velocity; // * speed_multiplier;
     ball_y_velocity = tmp_x_vel; //* speed_multiplier;
-  }
+  }*/
 }
 
 
