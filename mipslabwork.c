@@ -379,9 +379,16 @@ void center_ball() {
 
   // This is used to normalize the new velocity as to make it 1 again
   float reflection_normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity);
-  // Favors x velocity. As a result this can increase the current velocity up to 1.5x.
-  ball_y_velocity = start_velocity * (ball_y_velocity / reflection_normal);
-  ball_x_velocity = start_velocity * (ball_x_velocity / reflection_normal);
+
+  // Favors x velocity.
+  float tmp_x_vel = ball_x_velocity;
+  int x_multiplier = tmp_x_vel < 0 ? -1 : 1;
+  int y_multiplier = ball_y_velocity < 0 ? -1 : 1;
+
+  if (abs(ball_y_velocity) > abs(ball_x_velocity)){
+    ball_x_velocity = (x_multiplier * ball_y_velocity) / reflection_normal;
+    ball_y_velocity = (y_multiplier * tmp_x_vel) / reflection_normal;
+  }
 }
 
 
