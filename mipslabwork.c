@@ -58,7 +58,7 @@ int is_singleplayer = 0; // if gamemode is in singleplayer or multilpayer
 
 // ai difficulty
 int difficulty = EASY;
-int ai_reaction_pixels; // interval of pixels to ball ai reacts within
+int ai_reaction_pixels = 23; // interval of pixels to ball ai reacts within
 int ai_centers = 0;     // if the AI is allowed to recenter for a defensive position
 float speedup = 1.0002; // ball velocity speedup for increasing difficulty
 
@@ -158,7 +158,7 @@ char* name_and_points_array(char* name, int points) {
   return return_value; // return "name points"
 }
 
-// functions
+// declare functions
 void update_ball_pos_on_velocity(); 
 void update_canvas();
 void ai_update();
@@ -348,7 +348,6 @@ void clear_display() {
   for (i = 0; i < 4; i++)
     for (j = 0; j < 128; j++) 
       display[i][j] = 0;
-  //display_image(display); 
 }
 
 
@@ -394,15 +393,20 @@ void center_ball() {
 
   // Switch direction if y is prevalent
   if (abs(ball_y_velocity) > abs(ball_x_velocity)) {
+
     // Favors x velocity.
     float tmp_x_vel = ball_x_velocity;
 
+    // keeps sign on velocity
     float x_multiplier = tmp_x_vel < 0 ? -1 : 1;
     float y_multiplier = ball_y_velocity < 0 ? -1 : 1;
 
+    // swaps direction
     ball_x_velocity = x_multiplier * ball_y_velocity * speed_multiplier;
     ball_y_velocity = y_multiplier * tmp_x_vel * speed_multiplier;
-  } else {
+  } 
+  // no swap
+  else {
     ball_x_velocity *= speed_multiplier;
     ball_y_velocity *= speed_multiplier;
   }
@@ -448,12 +452,6 @@ void calculate_reflection_and_set_velocity(){
     // div ||v||²
     (normal_vector_x * normal_vector_x + normal_vector_y * normal_vector_y);
 
-  /*
-  printf("intercept_x %f\n", intercept_x);
-  printf("intercept_y %f\n", intercept_y);
-  printf("is_ball_upper %d\n", is_ball_upper);
-  */
-
   // These can be used but leads to unpredictable speeds
   float base_ball_x_velocity = -is_ball_left_multiplier * (base_reflection * normal_vector_x - reflection_vector_x);
   float base_ball_y_velocity = is_ball_left_multiplier * (base_reflection * normal_vector_y - reflection_vector_y);
@@ -462,9 +460,6 @@ void calculate_reflection_and_set_velocity(){
   // This is used to normalize the new velocity as to make it the same total speed
   float reflection_normal = sqrt(base_ball_x_velocity * base_ball_x_velocity + base_ball_y_velocity * base_ball_y_velocity);
   float current_normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity);
-
-  //printf("base_ball_x_velocity %f\n", (base_ball_x_velocity / reflection_normal));
-  //printf("base_ball_y_velocity %f\n\n", (base_ball_y_velocity / reflection_normal));
 
   // changes ball velocity based on reflection
   ball_y_velocity = (base_ball_y_velocity / reflection_normal) * current_normal;
@@ -479,6 +474,7 @@ void set_new_velocity_on_paddle_collision() {
     
     // Checks if to the right of the paddle
     ball_x >= (SCREEN_WIDTH_FLOAT - paddle_x - paddle_width) &&
+
     // Checks if to the left of the paddle
     ball_x <= (SCREEN_WIDTH_FLOAT - paddle_x + paddle_width) &&
 
@@ -491,8 +487,10 @@ void set_new_velocity_on_paddle_collision() {
 
   // If ball on left side!
   } else if (ball_x < (SCREEN_WIDTH_FLOAT / 2) &&
+
     // Checks if to the right of the paddle
     ball_x >= (paddle_x - paddle_width) && 
+
     // Checks if to the left of the paddle
     ball_x <= (paddle_x + paddle_width) && 
     
@@ -595,24 +593,25 @@ float ai_paddle_y_velocity = 0.5;
 // initializes ai based on difficulty
 void difficulty_init() {
   
-  // easy
+  // easy difficulty
   if (difficulty == EASY) {
-    ai_reaction_pixels = 10;
+    ai_reaction_pixels = 15;
+    ai_paddle_y_velocity = 0.2; 
     ai_centers = 0;
-    ai_paddle_y_velocity = 0.015; // DEBUG: Should be 0.15
   }
 
-  // hard
+  // hard difficulty
   else if (difficulty == HARD) {
-    ai_reaction_pixels == 100;
-    ai_centers = 1;
+    ai_reaction_pixels == 24;
     ai_paddle_y_velocity = 0.5;
+    ai_centers = 1;
   }
 
   // increasing difficulty
   else if (difficulty == INCREASING) {
-    ai_reaction_pixels = 10;
-    ai_paddle_y_velocity = 0.3;
+    ai_reaction_pixels = 15;
+    ai_paddle_y_velocity = 0.2;
+    ai_centers = 0;
   }
 
   game_time = 0; // restarts game time
@@ -648,7 +647,7 @@ void ai_move() {
   else if (ai_centers) {
     
     // if not centered 
-    if (paddle2_y != 15) {
+    if (abs(paddle2_y-15) > 1) {
 
       // over middle, decrease position
       if (paddle2_y > 15.5) {
@@ -676,11 +675,12 @@ void ai_update() {
   else if (difficulty == INCREASING) {
 
     // increases reaction time with game time to a limit
-    if (ai_reaction_pixels < 100) {
+    if (ai_reaction_pixels < 50) {
       ai_reaction_pixels += 0.01;
     }
 
-    if (ai_paddle_y_velocity < 2) {
+    // paddle y velocity
+    if (ai_paddle_y_velocity < 1) {
       ai_paddle_y_velocity *= 1.001;
     }
 
@@ -689,6 +689,7 @@ void ai_update() {
       ai_centers = 1;
     }
 
+    // increases ball speed 
     ball_x_velocity *= speedup;
     ball_y_velocity *= speedup;
 
@@ -743,8 +744,8 @@ void difficulty_options() {
 void singleplayer() {
   current_screen = SINGLEPLAYER; // in singleplayer
   is_singleplayer = 1;
-  center_ball(); // ??
   difficulty_init(); // initialize the selected difficulty
+  center_ball(); // ??
 }
 
 
@@ -760,6 +761,7 @@ void multiplayer() {
 void leaderboard() {
   current_screen = LEADERBOARD; // in leaderboard
 
+  // displays the leaderboard
   display_string(0, name_and_points_array(leaderboard_names[0], leaderboard_scores[0]));
   display_string(1, name_and_points_array(leaderboard_names[1], leaderboard_scores[1]));
   display_string(2, name_and_points_array(leaderboard_names[2], leaderboard_scores[2]));
@@ -822,22 +824,23 @@ void write_to_leaderboard() {
   else {
     name[selected_char_position] = selected_char;
 
-    display_string(0, name); // namn
-    display_string(1, "2. Select"); // bokstav 
-    display_string(2, "3. Right"); 
-    display_string(3, "4. Left");
+    display_string(0, name); // the current name
+    display_string(1, "2. Select"); // selects current character
+    display_string(2, "3. Right"); // character to the right
+    display_string(3, "4. Left"); // character to the left
     display_update();
   }
 }
 
 // if a new highscore has been achieved
 int got_highscore() {
-  int highscore = 0;
+  int highscore = 0; // false
   
+  // if points higher than of the leaderboard scores, then true
   int i = 0;
   for (i = 0; i < 3; i++) {
     if (player1_points > leaderboard_scores[i])
-      highscore = 1;
+      highscore = 1; // true
   }
   
   return highscore;
@@ -898,9 +901,10 @@ void results () {
 
   // from singleplayer
   if(is_singleplayer) {
+
+    // writes out points
     char points[] = "P =  ";
     points[5] = int_to_char(player1_points);
-
     display_string(1, points);
 
     // new highscore
@@ -933,7 +937,10 @@ void results () {
     else if (player2_points >= rounds_to_win) {    
       display_string(0, "Player2 won!");
     }
-    display_string(1, "");
+
+    // clear
+    display_string(1, ""); 
+    display_string(2, "");
   }
 
   // go back
@@ -1068,7 +1075,7 @@ void button3() {
     }
 
     // results
-    else if (current_screen == RESULTS && got_highscore()) {
+    else if (is_singleplayer && (current_screen == RESULTS && got_highscore())) {
       current_screen = WRITE_LEADERBOARD; 
     }
 
