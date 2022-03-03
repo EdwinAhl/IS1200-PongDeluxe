@@ -378,18 +378,18 @@ void center_ball() {
   ball_y = SCREEN_HEIGHT_FLOAT / 2;
 
   // This is used to normalize the new velocity as to make it 1 again
-  float base_velocity = sqrt(2 * (start_velocity * start_velocity));
-  float normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity);
-  float speed_multiplier = base_velocity / normal;
+  // float base_velocity = sqrt(2 * (start_velocity * start_velocity));
+  // float normal = sqrt(ball_x_velocity * ball_x_velocity + ball_y_velocity * ball_y_velocity);
+  // float speed_multiplier = base_velocity / normal;
 
   // Favors x velocity.
   float tmp_x_vel = ball_x_velocity;
   int x_multiplier = tmp_x_vel < 0 ? -1 : 1;
   int y_multiplier = ball_y_velocity < 0 ? -1 : 1;
 
-  if (abs(ball_y_velocity) > abs(ball_x_velocity)){
-    ball_x_velocity = x_multiplier * ball_y_velocity * speed_multiplier;
-    ball_y_velocity = y_multiplier * tmp_x_vel * speed_multiplier;
+  if (abs(ball_y_velocity) > abs(ball_x_velocity)) {
+    ball_x_velocity = x_multiplier * ball_y_velocity; // * speed_multiplier;
+    ball_y_velocity = y_multiplier * tmp_x_vel; //* speed_multiplier;
   }
 }
 
@@ -767,7 +767,8 @@ void save_to_leaderboard() {
     if (player2_points > leaderboard_scores[i]) {
       
         // previous score 
-        leaderboard_scores[i+1] = leaderboard_scores[i]; 
+        if (i+1 < ARRAY_SIZE)
+          leaderboard_scores[i+1] = leaderboard_scores[i]; 
 
         // previous name char wise
         leaderboard_names[i+1][0] = leaderboard_names[i][0];
