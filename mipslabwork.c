@@ -764,7 +764,7 @@ void save_to_leaderboard() {
   for (i; i >= 0; i--) {
 
     // if player points larger than current leaderboard positions score
-    if (player2_points > leaderboard_scores[i]) {
+    if (player1_points > leaderboard_scores[i]) {
       
         // previous score 
         leaderboard_scores[i+1] = leaderboard_scores[i]; 
@@ -782,7 +782,7 @@ void save_to_leaderboard() {
     }
   }
   //current score 
-  leaderboard_scores[i+1] = player2_points;
+  leaderboard_scores[i+1] = player1_points;
 
   // current name
   leaderboard_names[i+1][0] = name[0];
