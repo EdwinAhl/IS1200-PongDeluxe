@@ -2,4 +2,4 @@
 *.elf
 *.hex
 .deps
-.vscode
+.vscode/*
