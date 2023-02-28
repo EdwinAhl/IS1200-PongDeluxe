@@ -1,6 +1,8 @@
 # IS1200-PongDeluxe
 A traditional pong game for the ChipKIT Uno32 together with ChipKIT Basic I/O.
 
+![alt text](https://github.com/EdwinAhl/IS1200-PongDeluxe/blob/main/microcontroller.jpg)
+
 ## Functionalities 
 - Singleplayer vs AI of three difficulty levels
 - Multiplayer 
